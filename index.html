@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير المقارنة السنوي الشامل</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        /* إعدادات الصفحة والخلفية الفخمة */
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; 
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* زر التصدير */
+        .btn-export {
+            margin: 20px 0;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(56, 239, 125, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-export:hover {
+            transform: scale(1.05);
+        }
+
+        /* حاوية التقرير - مقاس A4 لصفحة واحدة */
+        .report-page {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 40px;
+            width: 210mm;
+            min-height: 297mm;
+            box-sizing: border-box;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        h1 {
+            text-align: center;
+            color: #e0e0e0;
+            margin-bottom: 30px;
+            font-size: 28px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 15px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #e0e0e0;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        /* تنسيق الجدول */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* فئة مخصصة للأرقام لتظهر بالإنجليزية وبشكل صحيح */
+        .en-num {
+            direction: ltr;
+            display: inline-block;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* حاوية الرسم البياني */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            box-sizing: border-box;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <button class="btn-export" onclick="exportPDF()">📥 تحميل التقرير (PDF)</button>
+
+    <div id="report-content" class="report-page">
+        <h1>تقرير المقارنة السنوي الشامل</h1>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>السنة</th>
+                    <th>إجمالي الحوالات (الدولار)</th>
+                    <th>إجمالي الحوالات (الليرة السورية)</th>
+                    <th>المبيعات المباشرة</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                </tbody>
+        </table>
+
+        <h2>الرسم البياني للمقارنة</h2>
+        <div class="chart-container">
+            <canvas id="annualChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // البيانات - يمكنك تعديلها لاحقاً لربطها بنظامك
+        const data = [
+            { year: 2024, usd: 12500000, syb: 43781075000, sales: 850000 },
+            { year: 2025, usd: 18450000, syb: 65200000000, sales: 1200000 },
+            { year: 2026, usd: 24000000, syb: 89500000000, sales: 1750000 }
+        ];
+
+        // دالة تنسيق الأرقام: فواصل للأموال، وبدون فواصل للسنوات
+        function formatNumber(num, isYear = false) {
+            if (isYear) {
+                return `<span class="en-num">${num}</span>`; 
+            }
+            const formatted = Number(num).toLocaleString('en-US');
+            return `<span class="en-num">${formatted}</span>`;
+        }
+
+        // بناء الجدول
+        const tbody = document.getElementById('table-body');
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${formatNumber(row.year, true)}</td>
+                <td>${formatNumber(row.usd)}</td>
+                <td>${formatNumber(row.syb)}</td>
+                <td>${formatNumber(row.sales)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // بناء الرسم البياني
+        const ctx = document.getElementById('annualChart').getContext('2d');
+        
+        // ألوان الأعمدة
+        const gradientUSD = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientUSD.addColorStop(0, 'rgba(56, 239, 125, 0.9)');
+        gradientUSD.addColorStop(1, 'rgba(56, 239, 125, 0.2)');
+
+        const gradientSales = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientSales.addColorStop(0, 'rgba(255, 206, 86, 0.9)');
+        gradientSales.addColorStop(1, 'rgba(255, 206, 86, 0.2)');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.year),
+                datasets: [
+                    {
+                        label: 'إجمالي الحوالات (دولار)',
+                        data: data.map(d => d.usd),
+                        backgroundColor: gradientUSD,
+                        borderColor: '#38ef7d',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'المبيعات المباشرة',
+                        data: data.map(d => d.sales),
+                        backgroundColor: gradientSales,
+                        borderColor: '#ffce56',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#fff', font: { family: 'Segoe UI', size: 14 } } }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#fff',
+                            font: { family: 'Courier New', weight: 'bold' },
+                            callback: function(value) { return value.toLocaleString('en-US'); }
+                        },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    },
+                    x: {
+                        ticks: { color: '#fff', font: { family: 'Courier New', weight: 'bold', size: 14 } },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // دالة تصدير الـ PDF
+        function exportPDF() {
+            const element = document.getElementById('report-content');
+            const opt = {
+                margin:       0,
+                filename:     'تقرير_المقارنة_السنوي_الشامل.pdf',
+                image:        { type: 'jpeg', quality: 1.0 },
+                html2canvas:  { scale: 3, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
