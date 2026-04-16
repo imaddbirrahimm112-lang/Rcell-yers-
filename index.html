@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="ar">
 <head>
 <meta charset="UTF-8">
@@ -8,345 +7,137 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-/* ══════════════════════════════════════════
-   ROOT
-══════════════════════════════════════════ */
 :root{
-  --bg:#04031a;
-  --glass:rgba(255,255,255,.05);
-  --glass-b:rgba(255,255,255,.11);
-  --glass-h:rgba(255,255,255,.08);
-  --a1:#818cf8;--a2:#a78bfa;--a3:#f472b6;
-  --a4:#fb923c;--a5:#34d399;--a6:#60a5fa;
-  --a7:#facc15;--a8:#2dd4bf;
-  --tp:rgba(255,255,255,.92);
-  --ts:rgba(255,255,255,.55);
-  --tm:rgba(255,255,255,.28);
-  --r:16px;
-  --sh:0 8px 32px rgba(0,0,0,.45);
-  --font:'Cairo',sans-serif;
+  --bg:#04031a;--glass:rgba(255,255,255,.055);--glass-b:rgba(255,255,255,.11);
+  --tp:rgba(255,255,255,.93);--ts:rgba(255,255,255,.52);--tm:rgba(255,255,255,.26);
+  --font:'Cairo',sans-serif;--r:15px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{
-  font-family:var(--font);
-  background:var(--bg);
-  color:var(--tp);
-  min-height:100vh;
-  direction:rtl;
-  overflow-x:hidden;
-}
+body{font-family:var(--font);background:var(--bg);color:var(--tp);min-height:100vh;direction:rtl;overflow-x:hidden}
 
-/* ══════════════════════════════════════════
-ANIMATED BACKGROUND
-══════════════════════════════════════════ */
-#bg-wrap{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.22;animation:drift linear infinite}
-.b1{width:600px;height:600px;background:radial-gradient(circle,#4f46e5,transparent);top:-120px;right:-120px;animation-duration:24s}
-.b2{width:450px;height:450px;background:radial-gradient(circle,#7c3aed,transparent);bottom:-100px;left:-80px;animation-duration:19s;animation-delay:-8s}
-.b3{width:350px;height:350px;background:radial-gradient(circle,#be185d,transparent);top:35%;left:25%;animation-duration:28s;animation-delay:-14s}
-.b4{width:380px;height:380px;background:radial-gradient(circle,#0e7490,transparent);bottom:15%;right:18%;animation-duration:22s;animation-delay:-6s}
-.b5{width:280px;height:280px;background:radial-gradient(circle,#065f46,transparent);top:60%;right:40%;animation-duration:31s;animation-delay:-19s;opacity:.15}
-@keyframes drift{
-0%,100%{transform:translate(0,0) scale(1)}
-25%{transform:translate(35px,-45px) scale(1.06)}
-50%{transform:translate(-25px,35px) scale(.93)}
-75%{transform:translate(45px,22px) scale(1.03)}
-}
-#bg-grid{
-position:fixed;inset:0;z-index:0;pointer-events:none;
-background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
-linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
-background-size:55px 55px;
-}
+/* ── BLOBS ── */
+#bgw{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.bl{position:absolute;border-radius:50%;filter:blur(100px);opacity:.2;animation:dr linear infinite}
+.b1{width:650px;height:650px;background:radial-gradient(circle,#4f46e5,transparent);top:-150px;right:-150px;animation-duration:25s}
+.b2{width:500px;height:500px;background:radial-gradient(circle,#7c3aed,transparent);bottom:-120px;left:-100px;animation-duration:20s;animation-delay:-9s}
+.b3{width:380px;height:380px;background:radial-gradient(circle,#be185d,transparent);top:38%;left:22%;animation-duration:29s;animation-delay:-15s}
+.b4{width:400px;height:400px;background:radial-gradient(circle,#0e7490,transparent);bottom:18%;right:16%;animation-duration:23s;animation-delay:-7s}
+.b5{width:300px;height:300px;background:radial-gradient(circle,#065f46,transparent);top:62%;right:42%;animation-duration:32s;animation-delay:-20s;opacity:.13}
+@keyframes dr{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(35px,-45px) scale(1.06)}50%{transform:translate(-28px,38px) scale(.93)}75%{transform:translate(44px,22px) scale(1.04)}}
+#bgg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.016) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.016) 1px,transparent 1px);background-size:56px 56px}
 
-/* ══════════════════════════════════════════
-LAYOUT
-══════════════════════════════════════════ */
-#app{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:20px 18px 70px}
+/* ── LAYOUT ── */
+#app{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:20px 16px 70px}
 
-/* ══════════════════════════════════════════
-HEADER
-══════════════════════════════════════════ */
-.hdr{
-display:flex;align-items:center;justify-content:space-between;
-padding:18px 26px;margin-bottom:22px;
-background:rgba(255,255,255,.04);
-border:1px solid rgba(255,255,255,.09);
-border-radius:20px;
-backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
-flex-wrap:wrap;gap:14px;
-}
-.hdr-brand{display:flex;align-items:center;gap:14px}
-.hdr-logo{
-width:50px;height:50px;
-background:linear-gradient(135deg,#6366f1,#a78bfa);
-border-radius:14px;display:flex;align-items:center;
-justify-content:center;font-size:24px;
-box-shadow:0 4px 22px rgba(99,102,241,.45);
-flex-shrink:0;
-}
-.hdr-title h1{
-font-size:19px;font-weight:900;
-background:linear-gradient(135deg,#fff,#a5b4fc);
--webkit-background-clip:text;-webkit-text-fill-color:transparent;
-}
-.hdr-title p{font-size:11px;color:var(–tm);margin-top:3px}
-.hdr-btns{display:flex;gap:9px;flex-wrap:wrap}
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;margin-bottom:20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:20px;backdrop-filter:blur(24px);flex-wrap:wrap;gap:12px}
+.hbrand{display:flex;align-items:center;gap:13px}
+.hlogo{width:48px;height:48px;background:linear-gradient(135deg,#6366f1,#a78bfa);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 20px rgba(99,102,241,.45);flex-shrink:0}
+.htitle h1{font-size:18px;font-weight:900;background:linear-gradient(135deg,#fff,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.htitle p{font-size:11px;color:var(--tm);margin-top:2px}
+.hbtns{display:flex;gap:8px;flex-wrap:wrap}
 
-/* ══════════════════════════════════════════
-BUTTONS
-══════════════════════════════════════════ */
-.btn{
-display:inline-flex;align-items:center;gap:6px;
-padding:9px 18px;border:none;border-radius:11px;
-font-family:var(–font);font-size:12.5px;font-weight:700;
-cursor:pointer;transition:all .2s;white-space:nowrap;
-}
-.btn-p{background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.4)}
-.btn-p:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(99,102,241,.55)}
-.btn-s{background:linear-gradient(135deg,#059669,#34d399);color:#fff;box-shadow:0 4px 16px rgba(5,150,105,.35)}
-.btn-s:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(5,150,105,.45)}
-.btn-g{background:var(–glass);color:var(–tp);border:1px solid var(–glass-b);backdrop-filter:blur(10px)}
-.btn-g:hover{background:var(–glass-h);transform:translateY(-1px)}
-.btn-sm{padding:5px 12px;font-size:11px}
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border:none;border-radius:11px;font-family:var(--font);font-size:12.5px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap}
+.bp{background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;box-shadow:0 4px 15px rgba(99,102,241,.4)}
+.bp:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(99,102,241,.55)}
+.bs{background:linear-gradient(135deg,#059669,#34d399);color:#fff;box-shadow:0 4px 14px rgba(5,150,105,.35)}
+.bs:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(5,150,105,.45)}
 
-/* ══════════════════════════════════════════
-NAV TABS
-══════════════════════════════════════════ */
-.nav{
-background:rgba(255,255,255,.03);
-border:1px solid rgba(255,255,255,.07);
-border-radius:18px;padding:9px;
-margin-bottom:20px;
-backdrop-filter:blur(18px);
-display:flex;gap:5px;flex-wrap:wrap;
-}
-.nav-tab{
-flex:1;min-width:72px;
-padding:9px 6px;border:1px solid transparent;
-border-radius:11px;background:transparent;
-color:var(–ts);font-family:var(–font);
-font-size:12.5px;font-weight:700;cursor:pointer;
-transition:all .2s;text-align:center;
-}
-.nav-tab:hover{background:rgba(255,255,255,.05);color:var(–tp)}
-.nav-tab.active{
-background:linear-gradient(135deg,rgba(99,102,241,.28),rgba(167,139,250,.18));
-color:#fff;border-color:rgba(129,140,248,.38);
-box-shadow:0 2px 12px rgba(99,102,241,.28);
-}
-.nav-tab.sum-tab.active{
-background:linear-gradient(135deg,rgba(52,211,153,.22),rgba(16,185,129,.13));
-border-color:rgba(52,211,153,.38);
-box-shadow:0 2px 12px rgba(52,211,153,.22);
-}
+/* ── NAV ── */
+.nav{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:8px;margin-bottom:18px;backdrop-filter:blur(18px);display:flex;gap:5px;flex-wrap:wrap}
+.ntab{flex:1;min-width:68px;padding:9px 5px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--ts);font-family:var(--font);font-size:12.5px;font-weight:700;cursor:pointer;transition:all .2s;text-align:center}
+.ntab:hover{background:rgba(255,255,255,.05);color:var(--tp)}
+.ntab.act{background:linear-gradient(135deg,rgba(99,102,241,.28),rgba(167,139,250,.18));color:#fff;border-color:rgba(129,140,248,.38);box-shadow:0 2px 12px rgba(99,102,241,.28)}
+.ntab.sact{background:linear-gradient(135deg,rgba(52,211,153,.22),rgba(16,185,129,.12));color:#fff;border-color:rgba(52,211,153,.38);box-shadow:0 2px 12px rgba(52,211,153,.2)}
 
-/* ══════════════════════════════════════════
-GLASS CARD
-══════════════════════════════════════════ */
-.gc{
-background:var(–glass);
-border:1px solid var(–glass-b);
-border-radius:var(–r);
-backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
-box-shadow:var(–sh);
-padding:20px;margin-bottom:18px;
-transition:border-color .2s;
-}
+/* ── GLASS CARD ── */
+.gc{background:var(--glass);border:1px solid var(--glass-b);border-radius:var(--r);backdrop-filter:blur(22px);box-shadow:0 8px 30px rgba(0,0,0,.4);padding:20px;margin-bottom:16px;transition:border-color .2s}
 .gc:hover{border-color:rgba(255,255,255,.17)}
 
-/* ══════════════════════════════════════════
-METRIC CARDS
-══════════════════════════════════════════ */
-.mcg{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:13px;margin-bottom:18px}
-.mc{
-background:var(–glass);
-border:1px solid var(–glass-b);
-border-radius:var(–r);padding:17px;
-backdrop-filter:blur(20px);
-transition:all .22s;position:relative;overflow:hidden;
-}
-.mc::before{content:’’;position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
-.mc:hover{transform:translateY(-3px);box-shadow:0 14px 44px rgba(0,0,0,.3)}
-.mc-ic{font-size:24px;margin-bottom:9px}
-.mc-lb{color:var(–tm);font-size:10.5px;font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
-.mc-vl{font-size:15px;font-weight:900;line-height:1.2}
-.mc-sb{color:var(–ts);font-size:11px;margin-top:4px}
+/* ── METRIC CARDS ── */
+.mcg{display:grid;grid-template-columns:repeat(auto-fit,minmax(182px,1fr));gap:12px;margin-bottom:16px}
+.mc{background:var(--glass);border:1px solid var(--glass-b);border-radius:var(--r);padding:16px;backdrop-filter:blur(20px);transition:all .22s;position:relative;overflow:hidden}
+.mc:hover{transform:translateY(-3px);box-shadow:0 14px 42px rgba(0,0,0,.3)}
+.mc-ic{font-size:22px;margin-bottom:8px}
+.mc-lb{color:var(--tm);font-size:10px;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.mc-vl{font-size:14.5px;font-weight:900;line-height:1.25}
+.mc-sb{color:var(--ts);font-size:10.5px;margin-top:4px;direction:ltr;text-align:right}
 
-/* ══════════════════════════════════════════
-TABLE
-══════════════════════════════════════════ */
+/* ── TABLE ── */
 .tw{overflow-x:auto}
-table{width:100%;border-collapse:collapse;direction:rtl;font-size:12.5px;min-width:650px}
-th{
-padding:11px 13px;color:var(–tm);
-font-size:10.5px;font-weight:700;text-align:center;
-text-transform:uppercase;letter-spacing:.4px;
-border-bottom:1px solid rgba(255,255,255,.08);
-white-space:nowrap;
-}
-td{
-padding:10px 13px;text-align:center;
-border-bottom:1px solid rgba(255,255,255,.038);
-transition:background .15s;
-}
-tr:hover td{background:rgba(255,255,255,.025)}
-.tf td{
-border-top:2px solid rgba(99,102,241,.32);
-background:rgba(99,102,241,.09) !important;
-font-weight:700;color:#fff;font-size:13px;
-}
-.row-peak td{background:rgba(251,191,36,.04) !important}
+table{width:100%;border-collapse:collapse;direction:rtl;font-size:12.5px;min-width:700px}
+th{padding:10px 12px;color:var(--tm);font-size:10px;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap}
+td{padding:10px 12px;text-align:center;border-bottom:1px solid rgba(255,255,255,.035);transition:background .15s}
+tr:hover td{background:rgba(255,255,255,.022)}
+.tf td{border-top:2px solid rgba(99,102,241,.32);background:rgba(99,102,241,.09)!important;font-weight:700;color:#fff;font-size:13px}
+.rpk td{background:rgba(251,191,36,.04)!important}
 
-/* ══════════════════════════════════════════
-INPUTS
-══════════════════════════════════════════ */
-.inp{
-background:rgba(255,255,255,.055);
-border:1px solid rgba(255,255,255,.11);
-border-radius:8px;color:var(–tp);
-font-family:var(–font);font-size:12px;
-padding:6px 9px;width:100%;text-align:center;
-transition:border-color .2s,background .2s;direction:ltr;
-}
-.inp:focus{outline:none;border-color:rgba(129,140,248,.48);background:rgba(255,255,255,.085)}
-.inp::placeholder{color:var(–tm)}
-/* Chrome number input arrows */
+/* ── INPUT ── */
+.inp{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.11);border-radius:8px;color:var(--tp);font-family:var(--font);font-size:12px;padding:6px 9px;width:100%;text-align:center;transition:border-color .2s,background .2s;direction:ltr}
+.inp:focus{outline:none;border-color:rgba(129,140,248,.48);background:rgba(255,255,255,.09)}
+.inp::placeholder{color:var(--tm)}
 .inp::-webkit-inner-spin-button,.inp::-webkit-outer-spin-button{opacity:.3}
 
-/* ══════════════════════════════════════════
-PROGRESS
-══════════════════════════════════════════ */
-.pb{height:5px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;width:65px;display:inline-block;vertical-align:middle}
-.pf{height:100%;border-radius:4px;transition:width .5s ease}
+/* ── PROGRESS ── */
+.pb{height:5px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;width:60px;display:inline-block;vertical-align:middle}
+.pf{height:100%;border-radius:4px;transition:width .5s}
 
-/* ══════════════════════════════════════════
-CHART
-══════════════════════════════════════════ */
-.ch-box{position:relative;height:275px}
-.ch-box-lg{height:320px}
+/* ── CHART ── */
+.chb{position:relative;height:270px}
 
-/* ══════════════════════════════════════════
-SECTION TITLE
-══════════════════════════════════════════ */
-.st{font-size:14px;font-weight:700;color:var(–tp);margin-bottom:15px;display:flex;align-items:center;gap:7px}
+/* ── SECTION TITLE ── */
+.st{font-size:14px;font-weight:700;color:var(--tp);margin-bottom:14px;display:flex;align-items:center;gap:7px}
 
-/* ══════════════════════════════════════════
-BADGE
-══════════════════════════════════════════ */
+/* ── BADGE ── */
 .bdg{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700}
-.bdg-up{background:rgba(52,211,153,.14);color:#34d399}
-.bdg-dn{background:rgba(248,113,113,.14);color:#f87171}
-.bdg-n{background:rgba(255,255,255,.07);color:var(–ts)}
+.bup{background:rgba(52,211,153,.14);color:#34d399}
+.bdn{background:rgba(248,113,113,.14);color:#f87171}
+.bnt{background:rgba(255,255,255,.07);color:var(--ts)}
 
-/* ══════════════════════════════════════════
-FADE
-══════════════════════════════════════════ */
-.fi{animation:fi .35s ease}
-@keyframes fi{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.fi{animation:fi .32s ease}
+@keyframes fi{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
-/* ══════════════════════════════════════════
-TOAST
-══════════════════════════════════════════ */
-#toast{
-position:fixed;bottom:26px;left:50%;
-transform:translateX(-50%) translateY(110px);
-background:rgba(8,6,35,.96);
-border:1px solid rgba(129,140,248,.38);
-color:#fff;padding:12px 26px;border-radius:12px;
-font-size:13px;font-weight:600;z-index:9999;
-transition:transform .3s ease;backdrop-filter:blur(22px);
-pointer-events:none;
-}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(110px);background:rgba(8,6,35,.97);border:1px solid rgba(129,140,248,.38);color:#fff;padding:11px 24px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;transition:transform .3s;backdrop-filter:blur(22px);pointer-events:none}
 #toast.show{transform:translateX(-50%) translateY(0)}
 
-/* ══════════════════════════════════════════
-SCROLLBAR
-══════════════════════════════════════════ */
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:4px}
-::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.24)}
 
-/* ══════════════════════════════════════════
-PRINT
-══════════════════════════════════════════ */
-@media print{
-#bg-wrap,#bg-grid,.hdr,.nav,.no-print{display:none!important}
-body{background:#fff!important;color:#000!important}
-.gc,.mc{background:#f8f9fa!important;border:1px solid #ddd!important;box-shadow:none!important;backdrop-filter:none!important}
-th,td{color:#111!important;border-color:#ddd!important}
-.inp{background:#f0f0f0!important;color:#111!important;border-color:#ccc!important}
-}
-
-/* ══════════════════════════════════════════
-RATE BOX
-══════════════════════════════════════════ */
-.rb{
-display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-background:rgba(255,255,255,.035);
-border:1px solid rgba(255,255,255,.09);
-border-radius:12px;padding:10px 16px;margin-bottom:18px;
-}
-.rb-lbl{color:var(–ts);font-size:12px;font-weight:600;white-space:nowrap}
-.rb-inp{width:120px}
-
-/* ══════════════════════════════════════════
-YEAR HEADER BAR
-══════════════════════════════════════════ */
-.yh{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:18px}
-.yh-left{display:flex;align-items:center;gap:12px}
-.yh-bar{width:5px;height:42px;border-radius:3px;flex-shrink:0}
-.yh-title{font-size:23px;font-weight:900;color:#fff}
-.yh-sub{color:var(–ts);font-size:11.5px;margin-top:3px}
+.yh{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.yhl{display:flex;align-items:center;gap:11px}
+.yhbar{width:5px;height:42px;border-radius:3px;flex-shrink:0}
+.yhtitle{font-size:22px;font-weight:900;color:#fff}
+.yhsub{color:var(--ts);font-size:11px;margin-top:2px}
+.rb{display:flex;align-items:center;gap:9px;flex-wrap:wrap;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:11px;padding:9px 14px}
+.rb-lbl{color:var(--ts);font-size:12px;font-weight:600;white-space:nowrap}
 </style>
-
 </head>
 <body>
-
-<!-- BG -->
-
-<div id="bg-wrap">
-  <div class="blob b1"></div>
-  <div class="blob b2"></div>
-  <div class="blob b3"></div>
-  <div class="blob b4"></div>
-  <div class="blob b5"></div>
-</div>
-<div id="bg-grid"></div>
-
+<div id="bgw"><div class="bl b1"></div><div class="bl b2"></div><div class="bl b3"></div><div class="bl b4"></div><div class="bl b5"></div></div>
+<div id="bgg"></div>
 <div id="app">
-  <!-- Header -->
   <header class="hdr">
-    <div class="hdr-brand">
-      <div class="hdr-logo">📊</div>
-      <div class="hdr-title">
-        <h1>نظام إدارة إيرادات أرسيل</h1>
-        <p>تتبع وتحليل الإيرادات الشهرية من 2019 إلى 2026</p>
-      </div>
+    <div class="hbrand">
+      <div class="hlogo">📊</div>
+      <div class="htitle"><h1>نظام إدارة إيرادات أرسيل</h1><p>تتبع وتحليل الإيرادات الشهرية 2019 – 2026</p></div>
     </div>
-    <div class="hdr-btns no-print">
-      <button class="btn btn-p" onclick="exportReport()">📄 تقرير PDF</button>
-      <button class="btn btn-s" onclick="exportFullApp()">🖨️ تصدير البرنامج كامل PDF</button>
+    <div class="hbtns">
+      <button class="btn bp" onclick="pdfReport()">📄 تقرير PDF</button>
+      <button class="btn bs" onclick="pdfFull()">🖨️ تصدير البرنامج كامل PDF</button>
     </div>
   </header>
-
-  <!-- Nav -->
-
   <nav class="nav" id="nav"></nav>
-
-  <!-- Content -->
-
   <main id="main"></main>
 </div>
-
 <div id="toast"></div>
 
 <script>
-/* ════════════════════════════════════════
-   CONSTANTS
-════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   DATA
+════════════════════════════════════════════════ */
 const MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 const YEARS=[2019,2020,2021,2022,2023,2024,2025,2026];
 const ACC=['#818cf8','#a78bfa','#f472b6','#fb923c','#facc15','#34d399','#60a5fa','#2dd4bf'];
@@ -361,304 +152,258 @@ const RAW={
   2025:[26885925000,26180900000,33252025000,34014650000,33027850000,33587125000,36379575000,38866625000,39999025000,42055550000,41039050000,43781075000],
   2026:[39529425000,30917575000,0,0,0,0,0,0,0,0,0,0]
 };
-const DEF_RATES={2019:700,2020:1500,2021:3500,2022:4500,2023:7000,2024:12000,2025:13500,2026:14000};
+const DEF={2019:700,2020:1500,2021:3500,2022:4500,2023:7000,2024:12000,2025:13500,2026:14000};
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════════════════
    STATE
-════════════════════════════════════════ */
+════════════════════════════════════════════════ */
 let S={view:2019,data:{}};
-YEARS.forEach(y=>{
-  S.data[y]={rate:DEF_RATES[y],months:RAW[y].map(r=>({rev:r,price:0}))};
-});
+YEARS.forEach(y=>{S.data[y]={rate:DEF[y],months:RAW[y].map(r=>({rev:r,price:0}))};});
 
-/* ════════════════════════════════════════
-   FORMAT HELPERS
-════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   FORMAT — fc() يضع فواصل لكل الأرقام EXCEPT السنوات
+════════════════════════════════════════════════ */
 const nv=v=>Number(v)||0;
 
-// Full number with commas (en-US style, Arabic digits issue avoided)
+// أرقام بفواصل (1,234,567) — للأرقام المالية فقط، ليس السنوات
 function fc(v){
   const x=nv(v);
-  if(!x)return'—';
+  if(!x) return '—';
   return x.toLocaleString('en-US');
 }
 
-// Short label (مليار/مليون)
-function fS(v){
-  const x=nv(v);
-  if(!x)return'0';
-  if(x>=1e12)return(x/1e12).toFixed(3)+' ت';
-  if(x>=1e9)return(x/1e9).toFixed(2)+' مليار';
-  if(x>=1e6)return(x/1e6).toFixed(2)+' مليون';
-  return x.toLocaleString('en-US');
-}
-
-// Full SYP with unit
+// وصف مختصر + وحدة
 function fSYP(v){
   const x=nv(v);
-  if(!x)return'—';
-  if(x>=1e12)return(x/1e12).toFixed(3)+' تريليون ل.س';
-  if(x>=1e9)return(x/1e9).toFixed(3)+' مليار ل.س';
-  if(x>=1e6)return(x/1e6).toFixed(2)+' مليون ل.س';
-  return x.toLocaleString('en-US')+' ل.س';
+  if(!x) return '—';
+  if(x>=1e12) return (x/1e12).toFixed(3)+' تريليون ل.س';
+  if(x>=1e9)  return (x/1e9).toFixed(3)+' مليار ل.س';
+  if(x>=1e6)  return (x/1e6).toFixed(2)+' مليون ل.س';
+  return fc(x)+' ل.س';
 }
 
-// USD
 function fUSD(v){
   const x=nv(v);
-  if(!x)return'—';
-  if(x>=1e9)return'$'+(x/1e9).toFixed(3)+'B';
-  if(x>=1e6)return'$'+(x/1e6).toFixed(3)+'M';
-  if(x>=1e3)return'$'+(x/1e3).toFixed(1)+'K';
-  return'$'+x.toFixed(0);
+  if(!x) return '—';
+  if(x>=1e9) return '$'+(x/1e9).toFixed(3)+'B';
+  if(x>=1e6) return '$'+(x/1e6).toFixed(3)+'M';
+  if(x>=1e3) return '$'+(x/1e3).toFixed(1)+'K';
+  return '$'+x.toFixed(0);
 }
 
-function pct(a,b){return b?((a/b)*100).toFixed(2)+'%':'—'}
+function fShort(v){
+  const x=nv(v);
+  if(!x) return '0';
+  if(x>=1e9) return (x/1e9).toFixed(2)+' مل';
+  if(x>=1e6) return (x/1e6).toFixed(1)+' م';
+  return fc(x);
+}
 
-/* ════════════════════════════════════════
+function pct(a,b){return b?((a/b)*100).toFixed(2)+'%':'—';}
+
+/* ════════════════════════════════════════════════
    COMPUTED
-════════════════════════════════════════ */
+════════════════════════════════════════════════ */
 function getYT(){
   return YEARS.map(y=>{
     const ms=S.data[y].months;
     const tot=ms.reduce((s,m)=>s+nv(m.rev),0);
-    const rate=S.data[y].rate;
+    const rate=nv(S.data[y].rate);
     const usd=rate>0?tot/rate:0;
-    const avgM=tot/12;
     const maxM=Math.max(...ms.map(m=>nv(m.rev)));
     const prev=y>2019?S.data[y-1].months.reduce((s,m)=>s+nv(m.rev),0):null;
     const growth=prev?((tot-prev)/prev*100):null;
-    return{year:y,tot,usd,avgM,maxM,growth,rate};
+    return{year:y,tot,usd,avgM:tot/12,maxM,growth,rate};
   });
 }
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════════════════
    TOAST
-════════════════════════════════════════ */
-let toastTimer;
-function toast(msg,dur=3200){
+════════════════════════════════════════════════ */
+let TT;
+function toast(msg,d=3200){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),dur);
+  clearTimeout(TT);TT=setTimeout(()=>t.classList.remove('show'),d);
 }
 
-/* ════════════════════════════════════════
-   CHART REGISTRY
-════════════════════════════════════════ */
-const charts={};
-function killChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+/* ════════════════════════════════════════════════
+   CHARTS
+════════════════════════════════════════════════ */
+const CH={};
+function kc(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
+const TTO={backgroundColor:'rgba(8,6,38,.97)',borderColor:'rgba(129,140,248,.38)',borderWidth:1,padding:12,titleFont:{family:'Cairo',size:12},bodyFont:{family:'Cairo',size:12}};
+const SX={grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'rgba(255,255,255,.58)',font:{family:'Cairo',size:10.5}}};
+const SY={grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'rgba(255,255,255,.45)',font:{family:'Cairo',size:10}}};
 
-/* ════════════════════════════════════════
-   CHART DEFAULTS
-════════════════════════════════════════ */
-const TT_OPTS={
-  backgroundColor:'rgba(8,6,38,.97)',
-  borderColor:'rgba(129,140,248,.38)',
-  borderWidth:1,padding:12,
-  titleFont:{family:'Cairo',size:12},
-  bodyFont:{family:'Cairo',size:12}
-};
-const SCALE_X={
-  grid:{color:'rgba(255,255,255,.04)'},
-  ticks:{color:'rgba(255,255,255,.58)',font:{family:'Cairo',size:10.5}}
-};
-const SCALE_Y=(fmt)=>({
-  grid:{color:'rgba(255,255,255,.04)'},
-  ticks:{color:'rgba(255,255,255,.45)',font:{family:'Cairo',size:10},callback:fmt||undefined}
-});
-
-/* ════════════════════════════════════════
-   RENDER NAV
-════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   NAV
+════════════════════════════════════════════════ */
 function renderNav(){
   document.getElementById('nav').innerHTML=
-    YEARS.map(y=>`<button class="nav-tab ${S.view===y?'active':''}" onclick="go(${y})">${y}</button>`).join('')+
-    `<button class="nav-tab sum-tab ${S.view==='summary'?'active':''}" onclick="go('summary')">📊 الملخص العام</button>`;
+    YEARS.map(y=>`<button class="ntab ${S.view===y?'act':''}" onclick="go(${y})">${y}</button>`).join('')+
+    `<button class="ntab ${S.view==='summary'?'sact':''}" onclick="go('summary')">📊 الملخص العام</button>`;
 }
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════════════════
    YEAR VIEW
-════════════════════════════════════════ */
+════════════════════════════════════════════════ */
 function renderYear(year){
   const yi=YEARS.indexOf(year);
   const yd=S.data[year];
   const ms=yd.months;
   const tot=ms.reduce((s,m)=>s+nv(m.rev),0);
-  const rate=yd.rate;
+  const rate=nv(yd.rate);
   const usd=rate>0?tot/rate:0;
-  const maxRev=Math.max(...ms.map(m=>nv(m.rev)));
+  const maxR=Math.max(...ms.map(m=>nv(m.rev)));
   const YT=getYT();
+  const grandTot=YT.reduce((s,y)=>s+y.tot,0);
   const prev=year>2019?S.data[year-1].months.reduce((s,m)=>s+nv(m.rev),0):null;
   const growth=prev?((tot-prev)/prev*100):null;
-  const grandTot=YT.reduce((s,y)=>s+y.tot,0);
+  const pkI=ms.findIndex(m=>nv(m.rev)===maxR&&maxR>0);
   const ac=ACC[yi];
-  const peakIdx=ms.findIndex(m=>nv(m.rev)===maxRev&&maxRev>0);
 
-  // Metric cards
-  const mcs=[
-    {ic:'💰',lb:'إجمالي الإيراد السنوي',vl:fSYP(tot),sb:fc(tot)+' ل.س',c:ac,ct:`${yi}`,br:ac},
-    {ic:'💵',lb:'بالدولار الأمريكي',vl:fUSD(usd),sb:'سعر الصرف: '+fc(rate)+' ل.س',c:'#34d399',br:'#34d399'},
-    {ic:'📅',lb:'المعدل الشهري',vl:fSYP(tot/12),sb:'',c:'#60a5fa',br:'#60a5fa'},
-    {ic:'🏆',lb:'أعلى شهر إيراداً',vl:fSYP(maxRev),sb:peakIdx>=0?MONTHS[peakIdx]:'',c:'#facc15',br:'#facc15'},
-    {ic:'📈',lb:'نمو عن العام السابق',vl:growth!==null?(growth>=0?'+':'')+growth.toFixed(1)+'%':'أول سنة',sb:'',c:growth>=0?'#34d399':'#f87171',br:growth>=0?'#34d399':'#f87171'},
-    {ic:'🌐',lb:'الحصة من الإجمالي الكلي',vl:pct(tot,grandTot),sb:fSYP(grandTot)+' الكل',c:'#a78bfa',br:'#a78bfa'},
-  ].map(m=>`
-    <div class="mc" style="--mc-br:${m.br}">
-      <div class="mc-ic">${m.ic}</div>
-      <div class="mc-lb">${m.lb}</div>
-      <div class="mc-vl" style="color:${m.c}">${m.vl}</div>
-      ${m.sb?`<div class="mc-sb">${m.sb}</div>`:''}
-      <style>.mc{border-top-color:${m.br}}</style>
+  const cards=[
+    {ic:'💰',lb:'إجمالي الإيراد السنوي',   vl:fSYP(tot),              sb:fc(tot)+' ل.س',            c:ac,         br:ac},
+    {ic:'💵',lb:'بالدولار الأمريكي',        vl:fUSD(usd),              sb:'سعر الصرف: '+fc(rate)+' ل.س', c:'#34d399',br:'#34d399'},
+    {ic:'📅',lb:'المعدل الشهري',            vl:fSYP(tot/12),           sb:fc(Math.round(tot/12))+' ل.س', c:'#60a5fa',br:'#60a5fa'},
+    {ic:'🏆',lb:'أعلى شهر إيراداً',          vl:fSYP(maxR),             sb:pkI>=0?MONTHS[pkI]:'',     c:'#facc15',  br:'#facc15'},
+    {ic:'📈',lb:'نمو عن العام السابق',       vl:growth!=null?(growth>=0?'+':'')+growth.toFixed(1)+'%':'أول سنة', sb:'', c:growth>=0?'#34d399':'#f87171', br:growth>=0?'#34d399':'#f87171'},
+    {ic:'🌐',lb:'الحصة من الإجمالي الكلي',  vl:pct(tot,grandTot),      sb:fSYP(grandTot)+' الكل',    c:'#a78bfa',  br:'#a78bfa'},
+  ].map(m=>`<div class="mc" style="border-top:3px solid ${m.br}">
+    <div class="mc-ic">${m.ic}</div>
+    <div class="mc-lb">${m.lb}</div>
+    <div class="mc-vl" style="color:${m.c}">${m.vl}</div>
+    ${m.sb?`<div class="mc-sb">${m.sb}</div>`:''}
+  </div>`).join('');
 
-```
-</div>`).join('');
-```
+  const prF=ms.filter(m=>nv(m.price)>0);
+  const avgPr=prF.length?prF.reduce((s,m)=>s+nv(m.price),0)/prF.length:0;
 
-// Fix: each mc needs individual border-top color
-const mcsHtml=mcs.replace(/<style>.*?</style>/gs,’’);
-// Actually let’s just inline it properly
-const mcCards=[
-{ic:‘💰’,lb:‘إجمالي الإيراد السنوي’,vl:fSYP(tot),sb:fc(tot)+’ ل.س’,c:ac,br:ac},
-{ic:‘💵’,lb:‘بالدولار الأمريكي’,vl:fUSD(usd),sb:‘سعر الصرف: ‘+fc(rate)+’ ل.س’,c:’#34d399’,br:’#34d399’},
-{ic:‘📅’,lb:‘المعدل الشهري’,vl:fSYP(tot/12),sb:’’,c:’#60a5fa’,br:’#60a5fa’},
-{ic:‘🏆’,lb:‘أعلى شهر إيراداً’,vl:fSYP(maxRev),sb:peakIdx>=0?MONTHS[peakIdx]:’’,c:’#facc15’,br:’#facc15’},
-{ic:‘📈’,lb:‘نمو عن العام السابق’,vl:growth!==null?(growth>=0?’+’:’’)+growth.toFixed(1)+’%’:‘أول سنة’,sb:’’,c:growth>=0?’#34d399’:’#f87171’,br:growth>=0?’#34d399’:’#f87171’},
-{ic:‘🌐’,lb:‘الحصة من الإجمالي الكلي’,vl:pct(tot,grandTot),sb:fSYP(grandTot)+’ الكل’,c:’#a78bfa’,br:’#a78bfa’},
-].map(m=>` <div class="mc" style="border-top:3px solid ${m.br}"> <div class="mc-ic">${m.ic}</div> <div class="mc-lb">${m.lb}</div> <div class="mc-vl" style="color:${m.c}">${m.vl}</div> ${m.sb?`<div class="mc-sb">${m.sb}</div>`:''} </div>`).join(’’);
-
-// Table rows
-const rows=ms.map((m,i)=>{
-const rev=nv(m.rev),price=nv(m.price);
-const usdM=rate>0?rev/rate:0;
-const subs=price>0&&rev>0?Math.round(rev/price):null;
-const sh=tot>0?(rev/tot*100):0;
-const isPeak=i===peakIdx&&maxRev>0;
-return`<tr class="${isPeak?'row-peak':''}"> <td style="font-weight:700;color:${ac};white-space:nowrap">${MONTHS[i]}${isPeak?' ⭐':''}</td> <td><input class="inp" type="number" value="${rev||''}" onchange="upRev(${year},${i},this.value)" placeholder="0" style="width:130px"></td> <td style="color:#a5b4fc;font-weight:600;white-space:nowrap">${rev?fc(rev)+' ل.س':'—'}</td> <td><input class="inp" type="number" value="${price||''}" onchange="upPrice(${year},${i},this.value)" placeholder="0" style="width:110px"></td> <td style="color:#2dd4bf">${subs?fc(subs):'—'}</td> <td style="color:#60a5fa">${fUSD(usdM)}</td> <td> <div style="display:flex;align-items:center;gap:5px;justify-content:center"> <div class="pb"><div class="pf" style="width:${sh}%;background:${ac}"></div></div> <span style="font-size:11px;color:rgba(255,255,255,.72)">${sh.toFixed(1)}%</span> </div> </td> </tr>`;
-}).join(’’);
-
-const priceFilled=ms.filter(m=>nv(m.price)>0);
-const avgPrice=priceFilled.length?priceFilled.reduce((s,m)=>s+nv(m.price),0)/priceFilled.length:0;
-
-document.getElementById(‘main’).innerHTML=`
-
-  <div class="fi">
-    <div class="yh">
-      <div class="yh-left">
-        <div class="yh-bar" style="background:${ac}"></div>
-        <div>
-          <div class="yh-title">سنة ${year}</div>
-          <div class="yh-sub">تقرير الإيرادات الشهري التفصيلي</div>
+  // جدول الشهور — كل الأرقام بفواصل
+  const rows=ms.map((m,i)=>{
+    const rev=nv(m.rev), pr=nv(m.price);
+    const usdM=rate>0?rev/rate:0;
+    const subs=pr>0&&rev>0?Math.round(rev/pr):null;
+    const sh=tot>0?(rev/tot*100):0;
+    const isPk=i===pkI&&maxR>0;
+    return`<tr class="${isPk?'rpk':''}">
+      <td style="font-weight:700;color:${ac};white-space:nowrap">${MONTHS[i]}${isPk?' ⭐':''}</td>
+      <td><input class="inp" type="number" value="${rev||''}" onchange="upRev(${year},${i},this.value)" placeholder="0" style="width:140px"></td>
+      <td style="color:#a5b4fc;font-weight:600;font-size:11.5px;direction:ltr;white-space:nowrap">${rev?fc(rev)+' ل.س':'—'}</td>
+      <td style="color:#7dd3fc;font-size:11px">${rev?fSYP(rev):'—'}</td>
+      <td><input class="inp" type="number" value="${pr||''}" onchange="upPrice(${year},${i},this.value)" placeholder="0" style="width:110px"></td>
+      <td style="color:#2dd4bf;font-weight:600">${subs?fc(subs):'—'}</td>
+      <td style="color:#60a5fa">${fUSD(usdM)}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:5px;justify-content:center">
+          <div class="pb"><div class="pf" style="width:${sh}%;background:${ac}"></div></div>
+          <span style="font-size:11px;color:rgba(255,255,255,.72)">${sh.toFixed(1)}%</span>
         </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('main').innerHTML=`<div class="fi">
+    <div class="yh">
+      <div class="yhl">
+        <div class="yhbar" style="background:${ac}"></div>
+        <div><div class="yhtitle">سنة ${year}</div><div class="yhsub">تقرير الإيرادات الشهري التفصيلي</div></div>
       </div>
-      <div class="rb no-print">
+      <div class="rb">
         <span class="rb-lbl">💱 سعر الصرف</span>
-        <input class="inp rb-inp" type="number" value="${rate}" onchange="upRate(${year},this.value)" placeholder="سعر الصرف">
-        <span class="rb-lbl" style="font-size:11px">ل.س / $</span>
+        <input class="inp" type="number" value="${rate}" onchange="upRate(${year},this.value)" style="width:115px" placeholder="سعر الصرف">
+        <span class="rb-lbl" style="font-size:10.5px">ل.س / $</span>
       </div>
     </div>
-    <div class="mcg">${mcCards}</div>
+    <div class="mcg">${cards}</div>
     <div class="gc">
       <div class="st">📊 توزيع الإيرادات الشهرية — ${year}</div>
-      <div class="ch-box"><canvas id="ychart"></canvas></div>
+      <div class="chb"><canvas id="yc"></canvas></div>
     </div>
     <div class="gc">
       <div class="st">📋 جدول الإيرادات الشهري التفصيلي</div>
       <div class="tw"><table>
         <thead><tr>
-          <th>الشهر</th>
-          <th>الإيراد (أدخل)</th>
-          <th>الإيراد (ل.س)</th>
-          <th>السعر الوسطي (ل.س)</th>
-          <th>المشتركون</th>
-          <th>بالدولار</th>
-          <th>النسبة من السنة</th>
+          <th>الشهر</th><th>إدخال الإيراد</th><th>الإيراد بالأرقام</th><th>الإيراد مختصر</th>
+          <th>السعر الوسطي</th><th>المشتركون</th><th>بالدولار</th><th>النسبة</th>
         </tr></thead>
         <tbody>${rows}</tbody>
         <tfoot><tr class="tf">
-          <td>الإجمالي</td>
-          <td></td>
-          <td>${fc(tot)} ل.س</td>
-          <td style="font-size:11px">${avgPrice>0?'وسطي: '+fc(Math.round(avgPrice))+' ل.س':'—'}</td>
-          <td></td>
-          <td>${fUSD(usd)}</td>
-          <td>100%</td>
+          <td>الإجمالي</td><td></td>
+          <td style="direction:ltr">${fc(tot)} ل.س</td>
+          <td>${fSYP(tot)}</td>
+          <td style="font-size:11px">${avgPr>0?fc(Math.round(avgPr))+' وسطياً':'—'}</td>
+          <td></td><td>${fUSD(usd)}</td><td>100%</td>
         </tr></tfoot>
       </table></div>
     </div>
   </div>`;
 
-// Draw chart
-killChart(‘yc’);
-const ctx=document.getElementById(‘ychart’);
-if(ctx){
-charts[‘yc’]=new Chart(ctx,{
-type:‘bar’,
-data:{
-labels:MONTHS.map(m=>m.slice(0,3)),
-datasets:[{
-label:‘الإيراد (ل.س)’,
-data:ms.map(m=>nv(m.rev)),
-backgroundColor:ms.map((m,i)=>{
-const v=nv(m.rev);
-const alpha=maxRev>0?0.35+0.55*(v/maxRev):0.4;
-return ac+Math.round(alpha*255).toString(16).padStart(2,‘0’);
-}),
-borderColor:ac,borderWidth:1.5,
-borderRadius:9,borderSkipped:false,
-}]
-},
-options:{
-responsive:true,maintainAspectRatio:false,
-plugins:{
-legend:{display:false},
-tooltip:{…TT_OPTS,callbacks:{label:c=>fSYP(c.raw)}}
-},
-scales:{x:SCALE_X,y:SCALE_Y(v=>fS(v))}
-}
-});
-}
+  kc('yc');
+  const c=document.getElementById('yc');
+  if(c) CH['yc']=new Chart(c,{
+    type:'bar',
+    data:{
+      labels:MONTHS.map(m=>m.slice(0,3)),
+      datasets:[{
+        label:'الإيراد',
+        data:ms.map(m=>nv(m.rev)),
+        backgroundColor:ms.map(m=>{const v=nv(m.rev);const a=maxR>0?0.3+0.6*(v/maxR):0.4;return ac+(Math.round(a*255)).toString(16).padStart(2,'0');}),
+        borderColor:ac,borderWidth:1.5,borderRadius:8,borderSkipped:false
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{...TTO,callbacks:{label:c=>fc(nv(c.raw))+' ل.س'}}},
+      scales:{x:SX,y:{...SY,ticks:{...SY.ticks,callback:v=>fShort(v)}}}
+    }
+  });
 }
 
-/* ════════════════════════════════════════
-SUMMARY VIEW
-════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   SUMMARY VIEW
+════════════════════════════════════════════════ */
 function renderSummary(){
-const YT=getYT();
-const grandTot=YT.reduce((s,y)=>s+y.tot,0);
-const grandUSD=YT.reduce((s,y)=>s+y.usd,0);
-const best=YT.reduce((a,b)=>b.tot>a.tot?b:a,YT[0]);
+  const YT=getYT();
+  const grandTot=YT.reduce((s,y)=>s+y.tot,0);
+  const grandUSD=YT.reduce((s,y)=>s+y.usd,0);
+  const best=YT.reduce((a,b)=>b.tot>a.tot?b:a,YT[0]);
 
-const mcCards=[
-{ic:‘🏦’,lb:‘إجمالي كل السنوات (ل.س)’,vl:fSYP(grandTot),sb:fc(grandTot)+’ ل.س’,c:’#818cf8’,br:’#818cf8’},
-{ic:‘💵’,lb:‘إجمالي كل السنوات ($)’,vl:fUSD(grandUSD),sb:’’,c:’#34d399’,br:’#34d399’},
-{ic:‘🏆’,lb:‘أعلى سنة إيراداً’,vl:`${best.year} — ${fSYP(best.tot)}`,sb:’’,c:’#facc15’,br:’#facc15’},
-{ic:‘📈’,lb:‘معدل نمو سنوي مركب’,vl:‘~120%’,sb:‘CAGR 2019–2026’,c:’#f472b6’,br:’#f472b6’},
-].map(m=>` <div class="mc" style="border-top:3px solid ${m.br}"> <div class="mc-ic">${m.ic}</div> <div class="mc-lb">${m.lb}</div> <div class="mc-vl" style="color:${m.c}">${m.vl}</div> ${m.sb?`<div class="mc-sb">${m.sb}</div>`:''} </div>`).join(’’);
+  const cards=[
+    {ic:'🏦',lb:'إجمالي كل السنوات (ل.س)',   vl:fSYP(grandTot),sb:fc(grandTot)+' ل.س',       c:'#818cf8',br:'#818cf8'},
+    {ic:'💵',lb:'إجمالي كل السنوات ($)',     vl:fUSD(grandUSD),sb:'',                          c:'#34d399',br:'#34d399'},
+    {ic:'🏆',lb:'أعلى سنة إيراداً',           vl:`${best.year} — ${fSYP(best.tot)}`,sb:'',      c:'#facc15',br:'#facc15'},
+    {ic:'📈',lb:'معدل نمو سنوي مركب',         vl:'~120%',sb:'CAGR 2019–2026',                   c:'#f472b6',br:'#f472b6'},
+  ].map(m=>`<div class="mc" style="border-top:3px solid ${m.br}">
+    <div class="mc-ic">${m.ic}</div>
+    <div class="mc-lb">${m.lb}</div>
+    <div class="mc-vl" style="color:${m.c}">${m.vl}</div>
+    ${m.sb?`<div class="mc-sb">${m.sb}</div>`:''}
+  </div>`).join('');
 
-const tRows=YT.map((y,i)=>` <tr> <td><span style="background:linear-gradient(135deg,${ACC[i]},${ACC[(i+1)%ACC.length]});padding:3px 14px;border-radius:8px;color:#fff;font-weight:700;font-size:12.5px">${y.year}</span></td> <td style="color:#a5b4fc;font-weight:600">${fSYP(y.tot)}</td> <td style="color:rgba(165,180,252,.7);font-size:11px;direction:ltr">${fc(y.tot)} ل.س</td> <td style="color:#34d399;font-weight:600">${fUSD(y.usd)}</td> <td>${y.growth!==null?`<span class="bdg ${y.growth>=0?'bdg-up':'bdg-dn'}">${y.growth>=0?’+’:’’}${y.growth.toFixed(1)}%</span>`:'<span class="bdg bdg-n">—</span>'}</td> <td> <div style="display:flex;align-items:center;gap:6px;justify-content:center"> <div class="pb" style="width:75px"><div class="pf" style="width:${grandTot>0?(y.tot/grandTot*100):0}%;background:${ACC[i]}"></div></div> <span style="font-size:11.5px;color:rgba(255,255,255,.75)">${pct(y.tot,grandTot)}</span> </div> </td> <td><input class="inp" type="number" value="${S.data[y.year].rate||''}" onchange="upRate(${y.year},this.value)" style="width:95px" placeholder="سعر الصرف"></td> </tr>`).join(’’);
+  const tRows=YT.map((y,i)=>`<tr>
+    <td><span style="background:linear-gradient(135deg,${ACC[i]},${ACC[(i+1)%ACC.length]});padding:3px 14px;border-radius:8px;color:#fff;font-weight:700;font-size:12.5px">${y.year}</span></td>
+    <td style="color:#a5b4fc;font-weight:600">${fSYP(y.tot)}</td>
+    <td style="color:rgba(165,180,252,.75);font-size:11.5px;direction:ltr;white-space:nowrap">${fc(y.tot)} ل.س</td>
+    <td style="color:#34d399;font-weight:600">${fUSD(y.usd)}</td>
+    <td>${y.growth!=null?`<span class="bdg ${y.growth>=0?'bup':'bdn'}">${y.growth>=0?'+':''}${y.growth.toFixed(1)}%</span>`:'<span class="bdg bnt">—</span>'}</td>
+    <td>
+      <div style="display:flex;align-items:center;gap:6px;justify-content:center">
+        <div class="pb" style="width:70px"><div class="pf" style="width:${grandTot>0?(y.tot/grandTot*100):0}%;background:${ACC[i]}"></div></div>
+        <span style="font-size:11.5px;color:rgba(255,255,255,.75)">${pct(y.tot,grandTot)}</span>
+      </div>
+    </td>
+    <td><input class="inp" type="number" value="${S.data[y.year].rate||''}" onchange="upRate(${y.year},this.value)" style="width:100px" placeholder="سعر الصرف"></td>
+  </tr>`).join('');
 
-const tFootRow=`<tr class="tf">
-<td>الإجمالي الكلي</td>
-<td style="color:#a5b4fc">${fSYP(grandTot)}</td>
-<td style="color:rgba(165,180,252,.7);font-size:11px;direction:ltr">${fc(grandTot)} ل.س</td>
-<td style="color:#34d399">${fUSD(grandUSD)}</td>
-<td colspan="3" style="color:var(--tm);text-align:center">— 2019 → 2026 —</td>
-
-  </tr>`;
-
-document.getElementById(‘main’).innerHTML=`
-
-  <div class="fi">
-    <div style="margin-bottom:20px">
-      <div style="font-size:23px;font-weight:900;color:#fff">📊 الملخص العام 2019–2026</div>
-      <div style="color:var(--ts);font-size:12.5px;margin-top:4px">مقارنة شاملة للإيرادات عبر جميع السنوات</div>
+  document.getElementById('main').innerHTML=`<div class="fi">
+    <div style="margin-bottom:18px">
+      <div style="font-size:22px;font-weight:900;color:#fff">📊 الملخص العام 2019 – 2026</div>
+      <div style="color:var(--ts);font-size:12px;margin-top:3px">مقارنة شاملة للإيرادات عبر جميع السنوات</div>
     </div>
-    <div class="mcg">${mcCards}</div>
-    <div class="gc">
-      <div class="st">📈 تطور الإيرادات السنوية 2019–2026</div>
-      <div class="ch-box"><canvas id="schart"></canvas></div>
-    </div>
+    <div class="mcg">${cards}</div>
+    <div class="gc"><div class="st">📈 تطور الإيرادات السنوية 2019 – 2026</div><div class="chb"><canvas id="sc"></canvas></div></div>
     <div class="gc">
       <div class="st">📋 جدول مقارنة سنوي شامل</div>
       <div class="tw"><table>
@@ -667,336 +412,421 @@ document.getElementById(‘main’).innerHTML=`
           <th>بالدولار</th><th>نمو سنوي</th><th>نسبة من الكل</th><th>سعر الصرف</th>
         </tr></thead>
         <tbody>${tRows}</tbody>
-        <tfoot>${tFootRow}</tfoot>
+        <tfoot><tr class="tf">
+          <td>الإجمالي</td>
+          <td>${fSYP(grandTot)}</td>
+          <td style="direction:ltr">${fc(grandTot)} ل.س</td>
+          <td>${fUSD(grandUSD)}</td>
+          <td colspan="3" style="color:var(--tm)">— 2019 → 2026 —</td>
+        </tr></tfoot>
       </table></div>
     </div>
     <div class="gc">
-      <div class="st">📅 مقارنة شهرية بين السنوات</div>
-      <div class="ch-box ch-box-lg"><canvas id="mchart"></canvas></div>
-      <p style="color:var(--tm);font-size:11px;text-align:center;margin-top:10px">الأرقام بالمليار ل.س — مقارنة الشهر نفسه عبر السنوات</p>
+      <div class="st">📅 مقارنة شهرية بين السنوات (مليار ل.س)</div>
+      <div class="chb" style="height:300px"><canvas id="mc"></canvas></div>
     </div>
   </div>`;
 
-// Annual bar + line chart
-killChart(‘sc’);
-const ctx1=document.getElementById(‘schart’);
-if(ctx1){
-charts[‘sc’]=new Chart(ctx1,{
-data:{
-labels:YEARS.map(String),
-datasets:[
-{type:‘bar’,label:‘مليار ل.س’,data:YT.map(y=>+(y.tot/1e9).toFixed(2)),
-backgroundColor:ACC.map(a=>a+‘55’),borderColor:ACC,
-borderWidth:1.5,borderRadius:9,yAxisID:‘y’},
-{type:‘line’,label:‘مليون $’,data:YT.map(y=>+(y.usd/1e6).toFixed(2)),
-borderColor:’#34d399’,backgroundColor:‘rgba(52,211,153,.12)’,
-borderWidth:2.5,pointBackgroundColor:’#34d399’,pointRadius:5,
-fill:false,tension:.4,yAxisID:‘y2’}
-]
-},
-options:{
-responsive:true,maintainAspectRatio:false,
-plugins:{
-legend:{labels:{color:‘rgba(255,255,255,.68)’,font:{family:‘Cairo’,size:11.5},boxWidth:16}},
-tooltip:{…TT_OPTS}
-},
-scales:{
-x:SCALE_X,
-y:{…SCALE_Y(v=>v+‘مل’),position:‘right’},
-y2:{grid:{display:false},ticks:{color:‘rgba(52,211,153,.7)’,font:{family:‘Cairo’,size:10},callback:v=>’$’+v+‘M’},position:‘left’}
-}
-}
-});
+  kc('sc');
+  const c1=document.getElementById('sc');
+  if(c1) CH['sc']=new Chart(c1,{
+    data:{
+      labels:YEARS.map(String),
+      datasets:[
+        {type:'bar',label:'مليار ل.س',data:YT.map(y=>+(y.tot/1e9).toFixed(2)),backgroundColor:ACC.map(a=>a+'55'),borderColor:ACC,borderWidth:1.5,borderRadius:9,yAxisID:'y'},
+        {type:'line',label:'مليون $',data:YT.map(y=>+(y.usd/1e6).toFixed(2)),borderColor:'#34d399',backgroundColor:'rgba(52,211,153,.1)',borderWidth:2.5,pointBackgroundColor:'#34d399',pointRadius:5,fill:false,tension:.4,yAxisID:'y2'}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'rgba(255,255,255,.68)',font:{family:'Cairo',size:11.5},boxWidth:16}},tooltip:{...TTO,callbacks:{label:c=>`${c.dataset.label}: ${fc(c.raw)}`}}},
+      scales:{
+        x:SX,
+        y:{...SY,position:'right',ticks:{...SY.ticks,callback:v=>v+'مل'}},
+        y2:{grid:{display:false},ticks:{color:'rgba(52,211,153,.7)',font:{family:'Cairo',size:10},callback:v=>'$'+fc(v)+'M'},position:'left'}
+      }
+    }
+  });
+
+  kc('mc');
+  const c2=document.getElementById('mc');
+  if(c2) CH['mc']=new Chart(c2,{
+    type:'line',
+    data:{
+      labels:MONTHS.map(m=>m.slice(0,3)),
+      datasets:YEARS.map((y,i)=>({
+        label:y.toString(),
+        data:MONTHS.map((_,mi)=>+(S.data[y].months[mi].rev/1e9).toFixed(2)),
+        borderColor:ACC[i],backgroundColor:ACC[i]+'1e',borderWidth:1.8,pointRadius:3,tension:.4,fill:false
+      }))
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'rgba(255,255,255,.62)',font:{family:'Cairo',size:11},boxWidth:18}},tooltip:{...TTO,callbacks:{label:c=>`${c.dataset.label}: ${c.raw} مليار ل.س`}}},
+      scales:{x:SX,y:{...SY,ticks:{...SY.ticks,callback:v=>v+'مل'}}}
+    }
+  });
 }
 
-// Monthly comparison line chart
-killChart(‘mc’);
-const ctx2=document.getElementById(‘mchart’);
-if(ctx2){
-charts[‘mc’]=new Chart(ctx2,{
-type:‘line’,
-data:{
-labels:MONTHS.map(m=>m.slice(0,3)),
-datasets:YEARS.map((y,i)=>({
-label:y.toString(),
-data:MONTHS.map((_,mi)=>+(S.data[y].months[mi].rev/1e9).toFixed(2)),
-borderColor:ACC[i],backgroundColor:ACC[i]+‘1e’,
-borderWidth:1.8,pointRadius:3,tension:.4,fill:false
-}))
-},
-options:{
-responsive:true,maintainAspectRatio:false,
-plugins:{
-legend:{labels:{color:‘rgba(255,255,255,.62)’,font:{family:‘Cairo’,size:11},boxWidth:18}},
-tooltip:{…TT_OPTS,callbacks:{label:c=>`${c.dataset.label}: ${c.raw} مليار ل.س`}}
-},
-scales:{x:SCALE_X,y:SCALE_Y(v=>v+‘مل’)}
-}
-});
-}
-}
-
-/* ════════════════════════════════════════
-STATE UPDATES
-════════════════════════════════════════ */
-function upRev(y,i,v){S.data[y].months[i].rev=nv(v);renderView()}
+/* ════════════════════════════════════════════════
+   STATE UPDATES
+════════════════════════════════════════════════ */
+function upRev(y,i,v){S.data[y].months[i].rev=nv(v);renderView();}
 function upPrice(y,i,v){S.data[y].months[i].price=nv(v);}
-function upRate(y,v){S.data[y].rate=nv(v);renderView()}
+function upRate(y,v){S.data[y].rate=nv(v);renderView();}
+function go(v){S.view=v;renderNav();renderView();}
+function renderView(){if(S.view==='summary')renderSummary();else renderYear(S.view);}
 
-function go(v){S.view=v;renderNav();renderView()}
-function renderView(){
-if(S.view===‘summary’)renderSummary();
-else renderYear(S.view);
-}
+/* ════════════════════════════════════════════════
+   PDF REPORT — نظيف ومنسق
+════════════════════════════════════════════════ */
+function pdfReport(){
+  const YT=getYT();
+  const grandTot=YT.reduce((s,y)=>s+y.tot,0);
+  const grandUSD=YT.reduce((s,y)=>s+y.usd,0);
+  const year=S.view==='summary'?null:S.view;
 
-/* ════════════════════════════════════════
-PDF REPORT (Formatted Report Window)
-════════════════════════════════════════ */
-function exportReport(){
-const year=S.view===‘summary’?null:S.view;
-const YT=getYT();
-const grandTot=YT.reduce((s,y)=>s+y.tot,0);
-const grandUSD=YT.reduce((s,y)=>s+y.usd,0);
-
-const yRows=YEARS.map(y=>{
-const yt=YT.find(yx=>yx.year===y);
-const sh=grandTot>0?(yt.tot/grandTot*100).toFixed(2):‘0’;
-return`<tr> <td><strong>${y}</strong></td> <td style="direction:ltr">${yt.tot?fc(yt.tot)+' ل.س':'—'}</td> <td>${fSYP(yt.tot)}</td> <td>${fUSD(yt.usd)}</td> <td>${yt.growth!==null?(yt.growth>=0?'+':'')+yt.growth.toFixed(1)+'%':'—'}</td> <td>${sh}%</td> <td style="direction:ltr">${fc(yt.rate)} ل.س</td> </tr>`;
-}).join(’’);
-
-let monthSec=’’;
-if(year){
-const yd=S.data[year];
-const tot=yd.months.reduce((s,m)=>s+nv(m.rev),0);
-const maxR=Math.max(…yd.months.map(m=>nv(m.rev)));
-const mRows=yd.months.map((m,i)=>{
-const rev=nv(m.rev),pr=nv(m.price);
-const usdM=yd.rate>0?rev/yd.rate:0;
-const subs=pr>0&&rev>0?Math.round(rev/pr):null;
-const isPk=rev===maxR&&maxR>0;
-return`<tr ${isPk?'style="background:#fffde7"':''}> <td>${MONTHS[i]}${isPk?' ⭐':''}</td> <td style="direction:ltr">${rev?fc(rev)+' ل.س':'—'}</td> <td style="direction:ltr">${pr?fc(pr)+' ل.س':'—'}</td> <td>${subs?fc(subs):'—'}</td> <td>${fUSD(usdM)}</td> <td>${tot>0?(rev/tot*100).toFixed(2)+'%':'—'}</td> </tr>`;
-}).join(’’);
-monthSec=` <h2>📅 تفاصيل سنة ${year} — شهرياً</h2> <table><thead><tr> <th>الشهر</th><th>الإيراد</th><th>السعر الوسطي</th><th>المشتركون</th><th>بالدولار</th><th>النسبة</th> </tr></thead><tbody>${mRows}</tbody> <tfoot><tr> <td><strong>الإجمالي</strong></td> <td style="direction:ltr"><strong>${fc(tot)} ل.س</strong></td> <td></td><td></td> <td><strong>${fUSD(yd.rate>0?tot/yd.rate:0)}</strong></td> <td><strong>100%</strong></td> </tr></tfoot></table>`;
-}
-
-const html=`<!DOCTYPE html><html dir="rtl" lang="ar"><head>
-<meta charset="UTF-8">
-
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-<title>تقرير إيرادات أرسيل</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Cairo',sans-serif;direction:rtl;background:#fff;color:#1a1a2e;padding:40px;font-size:13px}
-h1{font-size:26px;font-weight:900;color:#312e81;border-bottom:4px solid #6366f1;padding-bottom:12px;margin-bottom:10px}
-h2{font-size:15px;font-weight:700;color:#4338ca;margin:28px 0 12px;padding-right:10px;border-right:4px solid #818cf8}
-.meta{color:#64748b;font-size:12px;margin-bottom:26px;line-height:1.8}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:26px}
-.stat{background:#f8faff;border:1px solid #e0e7ff;border-radius:10px;padding:14px;border-top:3px solid #6366f1}
-.stat-lb{color:#64748b;font-size:10px;font-weight:700;text-transform:uppercase;margin-bottom:4px}
-.stat-vl{color:#312e81;font-size:14px;font-weight:900}
-.stat-sb{color:#94a3b8;font-size:11px;margin-top:3px}
-table{width:100%;border-collapse:collapse;margin-bottom:22px;font-size:12px}
-th{background:#f0f0ff;color:#312e81;padding:9px 11px;font-weight:700;text-align:center;border:1px solid #e0e7ff}
-td{padding:8px 11px;text-align:center;border:1px solid #f0f0f8}
-tr:nth-child(even) td{background:#fafafe}
-tfoot td{background:#f0f0ff!important;font-weight:700;color:#312e81}
-.footer{margin-top:36px;padding-top:14px;border-top:1px solid #e0e7ff;color:#94a3b8;font-size:11px;text-align:center}
-@media print{body{padding:20px}}
-</style></head><body>
-<h1>📊 تقرير إيرادات أرسيل 2019–2026</h1>
-<div class="meta">
-  تاريخ الإصدار: ${new Date().toLocaleDateString('ar-SY',{year:'numeric',month:'long',day:'numeric'})}
-  <br>إجمالي الإيرادات: ${fSYP(grandTot)} | ${fc(grandTot)} ل.س
-  <br>ما يعادل بالدولار: ${fUSD(grandUSD)}
-</div>
-<div class="stats">
-  <div class="stat"><div class="stat-lb">إجمالي الإيرادات (ل.س)</div><div class="stat-vl">${fSYP(grandTot)}</div><div class="stat-sb">${fc(grandTot)} ل.س</div></div>
-  <div class="stat" style="border-top-color:#34d399"><div class="stat-lb">إجمالي بالدولار</div><div class="stat-vl">${fUSD(grandUSD)}</div></div>
-  <div class="stat" style="border-top-color:#facc15"><div class="stat-lb">أعلى سنة إيراداً</div><div class="stat-vl">${YT.reduce((a,b)=>b.tot>a.tot?b:a).year}</div></div>
-</div>
-<h2>ملخص سنوي 2019–2026</h2>
-<table><thead><tr>
-  <th>السنة</th><th>الإيراد الكامل</th><th>الإيراد (مختصر)</th><th>بالدولار</th><th>نمو سنوي</th><th>الحصة</th><th>سعر الصرف</th>
-</tr></thead><tbody>${yRows}</tbody>
-<tfoot><tr>
-  <td>الإجمالي</td>
-  <td style="direction:ltr">${fc(grandTot)} ل.س</td>
-  <td>${fSYP(grandTot)}</td>
-  <td>${fUSD(grandUSD)}</td>
-  <td colspan="3">— — —</td>
-</tr></tfoot></table>
-${monthSec}
-<div class="footer">نظام إدارة إيرادات أرسيل | ${new Date().toLocaleDateString('ar-SY')}</div>
-<script>window.onload=()=>window.print()<\/script>
-</body></html>`;
-
-const w=window.open(’’,’_blank’);
-w.document.write(html);w.document.close();
-}
-
-/* ════════════════════════════════════════
-EXPORT FULL APP PDF
-════════════════════════════════════════ */
-function exportFullApp(){
-toast(‘⏳ جاري تجهيز التقرير الكامل…’);
-const YT=getYT();
-const grandTot=YT.reduce((s,y)=>s+y.tot,0);
-const grandUSD=YT.reduce((s,y)=>s+y.usd,0);
-
-const sumRows=YT.map(y=>`<tr>
-<td><strong>${y.year}</strong></td>
-<td style="direction:ltr">${fc(y.tot)} ل.س</td>
-<td>${fSYP(y.tot)}</td>
-<td>${fUSD(y.usd)}</td>
-<td>${y.growth!==null?(y.growth>=0?’+’:’’)+y.growth.toFixed(1)+’%’:’—’}</td>
-<td>${pct(y.tot,grandTot)}</td>
-<td style="direction:ltr">${fc(y.rate)} ل.س</td>
-
+  const yRows=YT.map((y,i)=>`<tr>
+    <td style="font-weight:700">${y.year}</td>
+    <td style="direction:ltr">${y.tot?fc(y.tot)+' ل.س':'—'}</td>
+    <td>${fSYP(y.tot)}</td>
+    <td>${fUSD(y.usd)}</td>
+    <td style="color:${(y.growth||0)>=0?'#065f46':'#991b1b'}">${y.growth!=null?(y.growth>=0?'+':'')+y.growth.toFixed(1)+'%':'—'}</td>
+    <td>${pct(y.tot,grandTot)}</td>
+    <td style="direction:ltr">${fc(y.rate)} ل.س/$</td>
   </tr>`).join('');
 
-const yearPages=YEARS.map((y,yi)=>{
-const yd=S.data[y];
-const ms=yd.months;
-const tot=ms.reduce((s,m)=>s+nv(m.rev),0);
-const usd=yd.rate>0?tot/yd.rate:0;
-const maxR=Math.max(…ms.map(m=>nv(m.rev)));
-const prev=y>2019?S.data[y-1].months.reduce((s,m)=>s+nv(m.rev),0):null;
-const growth=prev?((tot-prev)/prev*100):null;
-const pkIdx=ms.findIndex(m=>nv(m.rev)===maxR&&maxR>0);
-const ac=ACC[yi];
+  let mSec='';
+  if(year){
+    const yd=S.data[year];
+    const tot=yd.months.reduce((s,m)=>s+nv(m.rev),0);
+    const maxR=Math.max(...yd.months.map(m=>nv(m.rev)));
+    const mRows=yd.months.map((m,i)=>{
+      const rev=nv(m.rev),pr=nv(m.price),isPk=rev===maxR&&maxR>0;
+      const usdM=yd.rate>0?rev/yd.rate:0;
+      const subs=pr>0&&rev>0?Math.round(rev/pr):null;
+      return`<tr ${isPk?'style="background:#fefce8"':''}>
+        <td style="font-weight:700">${MONTHS[i]}${isPk?' ⭐':''}</td>
+        <td style="direction:ltr">${rev?fc(rev)+' ل.س':'—'}</td>
+        <td>${rev?fSYP(rev):'—'}</td>
+        <td style="direction:ltr">${pr?fc(pr)+' ل.س':'—'}</td>
+        <td>${subs?fc(subs):'—'}</td>
+        <td>${fUSD(usdM)}</td>
+        <td>${tot>0?(rev/tot*100).toFixed(2)+'%':'—'}</td>
+      </tr>`;
+    }).join('');
+    mSec=`<h2>📅 تفاصيل ${year} — شهرياً</h2>
+    <table><thead><tr><th>الشهر</th><th>الإيراد بالأرقام</th><th>مختصر</th><th>السعر الوسطي</th><th>المشتركون</th><th>بالدولار</th><th>النسبة</th></tr></thead>
+    <tbody>${mRows}</tbody>
+    <tfoot><tr>
+      <td><strong>الإجمالي</strong></td>
+      <td style="direction:ltr"><strong>${fc(tot)} ل.س</strong></td>
+      <td><strong>${fSYP(tot)}</strong></td>
+      <td></td><td></td>
+      <td><strong>${fUSD(yd.rate>0?tot/yd.rate:0)}</strong></td>
+      <td><strong>100%</strong></td>
+    </tr></tfoot></table>`;
+  }
 
-```
-const mRows=ms.map((m,i)=>{
-  const rev=nv(m.rev),pr=nv(m.price);
-  const usdM=yd.rate>0?rev/yd.rate:0;
-  const subs=pr>0&&rev>0?Math.round(rev/pr):null;
-  const sh=tot>0?(rev/tot*100):0;
-  const isPk=i===pkIdx&&maxR>0;
-  return`<tr ${isPk?'style="background:#fffde7"':''}>
-    <td style="font-weight:700">${MONTHS[i]}${isPk?' ⭐':''}</td>
-    <td style="direction:ltr">${rev?fc(rev)+' ل.س':'—'}</td>
-    <td style="direction:ltr">${pr?fc(pr)+' ل.س':'—'}</td>
-    <td>${subs?fc(subs):'—'}</td>
-    <td>${fUSD(usdM)}</td>
-    <td>${sh.toFixed(2)}%</td>
-  </tr>`;
-}).join('');
+  openPrint(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<title>تقرير أرسيل</title><style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;direction:rtl;background:#fff;color:#1e1b4b;padding:36px;font-size:12.5px}
+h1{font-size:24px;font-weight:900;color:#312e81;border-bottom:4px solid #6366f1;padding-bottom:10px;margin-bottom:8px}
+h2{font-size:14px;font-weight:700;color:#4338ca;margin:26px 0 11px;padding-right:9px;border-right:4px solid #818cf8}
+.meta{color:#64748b;font-size:11.5px;margin-bottom:22px;line-height:2}
+.s3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:22px}
+.sc{background:#f0f0ff;border:1px solid #e0e7ff;border-radius:10px;padding:13px;border-top:3px solid #6366f1}
+.slb{color:#64748b;font-size:9.5px;font-weight:700;text-transform:uppercase;margin-bottom:3px}
+.svl{color:#312e81;font-size:13.5px;font-weight:900}
+.ssb{color:#94a3b8;font-size:10.5px;margin-top:3px;direction:ltr}
+table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:11.5px}
+th{background:#ede9fe;color:#312e81;padding:9px 11px;font-weight:700;text-align:center;border:1px solid #ddd6fe}
+td{padding:8px 11px;text-align:center;border:1px solid #f0f0f8}
+tr:nth-child(even)td{background:#fafafe}
+tfoot td{background:#ede9fe!important;font-weight:700;color:#312e81}
+.foot{margin-top:32px;padding-top:12px;border-top:1px solid #e0e7ff;color:#94a3b8;font-size:10.5px;text-align:center}
+</style></head><body>
+<h1>📊 تقرير إيرادات أرسيل 2019 – 2026</h1>
+<div class="meta">
+  تاريخ الإصدار: ${new Date().toLocaleDateString('ar-SY',{year:'numeric',month:'long',day:'numeric'})}<br>
+  إجمالي الإيرادات: ${fSYP(grandTot)}<br>
+  الإيراد الكامل: ${fc(grandTot)} ل.س<br>
+  ما يعادل بالدولار: ${fUSD(grandUSD)}
+</div>
+<div class="s3">
+  <div class="sc"><div class="slb">إجمالي (ل.س)</div><div class="svl">${fSYP(grandTot)}</div><div class="ssb">${fc(grandTot)} ل.س</div></div>
+  <div class="sc" style="border-top-color:#059669"><div class="slb">إجمالي ($)</div><div class="svl">${fUSD(grandUSD)}</div></div>
+  <div class="sc" style="border-top-color:#d97706"><div class="slb">أعلى سنة</div><div class="svl">${YT.reduce((a,b)=>b.tot>a.tot?b:a).year}</div></div>
+</div>
+<h2>ملخص سنوي 2019 – 2026</h2>
+<table><thead><tr><th>السنة</th><th>الإيراد الكامل</th><th>الإيراد (مختصر)</th><th>بالدولار</th><th>نمو سنوي</th><th>الحصة</th><th>سعر الصرف</th></tr></thead>
+<tbody>${yRows}</tbody>
+<tfoot><tr><td>الإجمالي</td><td style="direction:ltr">${fc(grandTot)} ل.س</td><td>${fSYP(grandTot)}</td><td>${fUSD(grandUSD)}</td><td colspan="3">— — —</td></tr></tfoot></table>
+${mSec}
+<div class="foot">نظام إدارة إيرادات أرسيل | ${new Date().toLocaleDateString('ar-SY')}</div>
+</body></html>`);
+}
 
-return`<div style="page-break-before:always">
-  <h2 style="color:${ac};border-color:${ac}">📅 سنة ${y}</h2>
-  <div class="stats6">
-    <div class="stat"><div class="stat-lb">إجمالي الإيراد</div><div class="stat-vl">${fSYP(tot)}</div><div class="stat-sb" style="direction:ltr">${fc(tot)} ل.س</div></div>
-    <div class="stat" style="border-top-color:#34d399"><div class="stat-lb">بالدولار</div><div class="stat-vl">${fUSD(usd)}</div></div>
-    <div class="stat" style="border-top-color:#60a5fa"><div class="stat-lb">المعدل الشهري</div><div class="stat-vl">${fSYP(tot/12)}</div></div>
-    <div class="stat" style="border-top-color:#facc15"><div class="stat-lb">نمو عن السابق</div><div class="stat-vl">${growth!==null?(growth>=0?'+':'')+growth.toFixed(1)+'%':'أول سنة'}</div></div>
-    <div class="stat" style="border-top-color:#a78bfa"><div class="stat-lb">سعر الصرف</div><div class="stat-vl" style="direction:ltr">${fc(yd.rate)} ل.س</div></div>
-    <div class="stat" style="border-top-color:#f472b6"><div class="stat-lb">الحصة من الكل</div><div class="stat-vl">${pct(tot,grandTot)}</div></div>
-  </div>
-  <table><thead><tr>
-    <th>الشهر</th><th>الإيراد</th><th>السعر الوسطي</th><th>المشتركون</th><th>بالدولار</th><th>النسبة</th>
-  </tr></thead><tbody>${mRows}</tbody>
-  <tfoot><tr>
-    <td><strong>الإجمالي</strong></td>
-    <td style="direction:ltr"><strong>${fc(tot)} ل.س</strong></td>
-    <td></td><td></td>
-    <td><strong>${fUSD(usd)}</strong></td>
-    <td><strong>100%</strong></td>
-  </tr></tfoot></table>
-</div>`;
-```
+/* ════════════════════════════════════════════════
+   PDF FULL — طبق الأصل بالتصميم الداكن
+════════════════════════════════════════════════ */
+function pdfFull(){
+  toast('⏳ جاري بناء التقرير الكامل بالتصميم الداكن...',5000);
+  const YT=getYT();
+  const grandTot=YT.reduce((s,y)=>s+y.tot,0);
+  const grandUSD=YT.reduce((s,y)=>s+y.usd,0);
+  const best=YT.reduce((a,b)=>b.tot>a.tot?b:a,YT[0]);
 
-}).join(’’);
+  /* ── SVG مخطط أعمدة مضمّن لكل سنة ── */
+  function svgBar(months,maxR,ac,W=540,H=120){
+    const N=12,bw=(W-5*2)/N-3,pad=3;
+    const bars=months.map((m,i)=>{
+      const v=nv(m.rev);
+      const bh=maxR>0?Math.max(2,(v/maxR)*(H-18)):2;
+      const x=pad+i*(bw+pad);
+      const y=H-bh;
+      const op=(maxR>0?0.35+0.6*(v/maxR):0.4).toFixed(2);
+      const lbl=fShort(v);
+      return`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" rx="3" fill="${ac}" opacity="${op}"/>
+<text x="${(x+bw/2).toFixed(1)}" y="${(H+13).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,.5)" font-family="Cairo,sans-serif">${MONTHS[i].slice(0,3)}</text>`;
+    }).join('');
+    return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H+18}" width="${W}" height="${H+18}">${bars}</svg>`;
+  }
 
-const fullHTML=`<!DOCTYPE html><html dir="rtl" lang="ar"><head>
+  /* ── SVG مخطط الملخص السنوي ── */
+  function svgSum(YT,W=720,H=140){
+    const maxT=Math.max(...YT.map(y=>y.tot));
+    const bw=W/8-10,pad=6;
+    const bars=YT.map((y,i)=>{
+      const bh=maxT>0?Math.max(4,(y.tot/maxT)*(H-28)):4;
+      const x=pad+i*(bw+pad);
+      const yy=H-bh;
+      return`<rect x="${x.toFixed(1)}" y="${yy.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" rx="4" fill="${ACC[i]}" opacity="0.88"/>
+<text x="${(x+bw/2).toFixed(1)}" y="${(H+14).toFixed(1)}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.65)" font-family="Cairo,sans-serif">${y.year}</text>
+<text x="${(x+bw/2).toFixed(1)}" y="${(yy-4).toFixed(1)}" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.5)" font-family="Cairo,sans-serif">${(y.tot/1e9).toFixed(1)}</text>`;
+    }).join('');
+    return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H+22}" width="${W}" height="${H+22}">${bars}</svg>`;
+  }
+
+  /* ── صفحة كل سنة ── */
+  function yearPage(y,yi){
+    const yd=S.data[y],ms=yd.months;
+    const tot=ms.reduce((s,m)=>s+nv(m.rev),0);
+    const rate=nv(yd.rate);
+    const usd=rate>0?tot/rate:0;
+    const maxR=Math.max(...ms.map(m=>nv(m.rev)));
+    const prev=y>2019?S.data[y-1].months.reduce((s,m)=>s+nv(m.rev),0):null;
+    const growth=prev?((tot-prev)/prev*100):null;
+    const pkI=ms.findIndex(m=>nv(m.rev)===maxR&&maxR>0);
+    const ac=ACC[yi];
+    const gUp=growth===null||growth>=0;
+
+    const rows=ms.map((m,i)=>{
+      const rev=nv(m.rev),pr=nv(m.price);
+      const usdM=rate>0?rev/rate:0;
+      const subs=pr>0&&rev>0?Math.round(rev/pr):null;
+      const sh=tot>0?(rev/tot*100):0;
+      const isPk=i===pkI&&maxR>0;
+      const bg=isPk?'background:rgba(250,204,21,.08)':'';
+      return`<tr style="${bg}">
+        <td style="font-weight:700;color:${ac}">${MONTHS[i]}${isPk?' ⭐':''}</td>
+        <td style="direction:ltr;color:#a5b4fc;font-weight:600">${rev?fc(rev)+' ل.س':'—'}</td>
+        <td style="color:#7dd3fc;font-size:10px">${rev?fSYP(rev):'—'}</td>
+        <td style="direction:ltr;color:#94a3b8">${pr?fc(pr)+' ل.س':'—'}</td>
+        <td style="color:#2dd4bf">${subs?fc(subs):'—'}</td>
+        <td style="color:#60a5fa">${fUSD(usdM)}</td>
+        <td>
+          <div style="display:inline-flex;align-items:center;gap:4px">
+            <div style="width:40px;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden">
+              <div style="width:${sh}%;height:100%;background:${ac};border-radius:2px"></div>
+            </div>
+            <span style="font-size:9.5px;color:rgba(255,255,255,.6)">${sh.toFixed(1)}%</span>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    return`<div class="page">
+      <div class="phdr" style="border-color:${ac}">
+        <div class="pyear" style="color:${ac}">${y}</div>
+        <div class="psub">تقرير الإيرادات الشهري التفصيلي</div>
+      </div>
+      <div class="c6g">
+        <div class="c6" style="border-top-color:${ac}"><div class="clb">إجمالي الإيراد</div><div class="cvl" style="color:${ac}">${fSYP(tot)}</div><div class="csb" style="direction:ltr">${fc(tot)} ل.س</div></div>
+        <div class="c6" style="border-top-color:#34d399"><div class="clb">بالدولار الأمريكي</div><div class="cvl" style="color:#34d399">${fUSD(usd)}</div><div class="csb">سعر الصرف: ${fc(rate)} ل.س</div></div>
+        <div class="c6" style="border-top-color:#60a5fa"><div class="clb">المعدل الشهري</div><div class="cvl" style="color:#60a5fa">${fSYP(tot/12)}</div><div class="csb" style="direction:ltr">${fc(Math.round(tot/12))} ل.س</div></div>
+        <div class="c6" style="border-top-color:#facc15"><div class="clb">أعلى شهر إيراداً</div><div class="cvl" style="color:#facc15">${fSYP(maxR)}</div><div class="csb">${pkI>=0?MONTHS[pkI]:''}</div></div>
+        <div class="c6" style="border-top-color:${gUp?'#34d399':'#f87171'}"><div class="clb">نمو عن العام السابق</div><div class="cvl" style="color:${gUp?'#34d399':'#f87171'}">${growth!=null?(growth>=0?'+':'')+growth.toFixed(1)+'%':'أول سنة'}</div></div>
+        <div class="c6" style="border-top-color:#a78bfa"><div class="clb">الحصة من الإجمالي الكلي</div><div class="cvl" style="color:#a78bfa">${pct(tot,grandTot)}</div></div>
+      </div>
+      <div class="chw"><div class="chlb">📊 توزيع الإيرادات الشهرية — ${y}</div>${svgBar(ms,maxR,ac)}</div>
+      <table>
+        <thead><tr><th>الشهر</th><th>الإيراد بالأرقام</th><th>الإيراد (مختصر)</th><th>السعر الوسطي</th><th>المشتركون</th><th>بالدولار</th><th>النسبة</th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr>
+          <td>الإجمالي</td>
+          <td style="direction:ltr;color:#a5b4fc">${fc(tot)} ل.س</td>
+          <td style="color:#7dd3fc">${fSYP(tot)}</td>
+          <td></td><td></td>
+          <td style="color:#60a5fa">${fUSD(usd)}</td>
+          <td>100%</td>
+        </tr></tfoot>
+      </table>
+      <div class="pfoot">نظام إيرادات أرسيل | سنة ${y}</div>
+    </div>`;
+  }
+
+  /* ── ملخص الجدول السنوي ── */
+  const sumRows=YT.map((y,i)=>`<tr>
+    <td><span style="background:${ACC[i]};padding:3px 12px;border-radius:7px;color:#fff;font-weight:700;font-size:12px">${y.year}</span></td>
+    <td style="direction:ltr;color:#a5b4fc;font-weight:600">${fc(y.tot)} ل.س</td>
+    <td style="color:#7dd3fc">${fSYP(y.tot)}</td>
+    <td style="color:#34d399;font-weight:600">${fUSD(y.usd)}</td>
+    <td style="color:${y.growth>=0?'#34d399':'#f87171'}">${y.growth!=null?(y.growth>=0?'+':'')+y.growth.toFixed(1)+'%':'—'}</td>
+    <td>
+      <div style="display:inline-flex;align-items:center;gap:5px">
+        <div style="width:55px;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden">
+          <div style="width:${grandTot>0?(y.tot/grandTot*100):0}%;height:100%;background:${ACC[i]};border-radius:3px"></div>
+        </div>
+        <span style="font-size:11px;color:rgba(255,255,255,.7)">${pct(y.tot,grandTot)}</span>
+      </div>
+    </td>
+    <td style="direction:ltr;color:rgba(255,255,255,.55)">${fc(y.rate)} ل.س</td>
+  </tr>`).join('');
+
+  const yearPages=YEARS.map((y,i)=>yearPage(y,i)).join('');
+
+  const fullHTML=`<!DOCTYPE html><html dir="rtl" lang="ar"><head>
 <meta charset="UTF-8">
-
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 <title>تقرير أرسيل الكامل 2019–2026</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Cairo',sans-serif;direction:rtl;background:#fff;color:#1a1a2e;padding:30px;font-size:12px}
-h1{font-size:26px;font-weight:900;color:#312e81;border-bottom:4px solid #6366f1;padding-bottom:10px;margin-bottom:10px}
-h2{font-size:15px;font-weight:700;margin:0 0 13px;padding-right:10px;border-right:4px solid currentColor}
-.meta{color:#64748b;font-size:11px;margin-bottom:22px;line-height:1.9}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:20px}
-.stats6{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-.stat{background:#f8faff;border:1px solid #e0e7ff;border-radius:9px;padding:12px;border-top:3px solid #6366f1}
-.stat-lb{color:#64748b;font-size:9px;font-weight:700;text-transform:uppercase;margin-bottom:3px}
-.stat-vl{color:#312e81;font-size:13px;font-weight:900}
-.stat-sb{color:#94a3b8;font-size:10px;margin-top:2px}
-table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:11.5px}
-th{background:#f0f0ff;color:#312e81;padding:8px 10px;font-weight:700;text-align:center;border:1px solid #e0e7ff}
-td{padding:7px 10px;text-align:center;border:1px solid #f0f0f8}
-tr:nth-child(even) td{background:#fafafe}
-tfoot td{background:#f0f0ff!important;font-weight:700;color:#312e81}
-.cover{text-align:center;padding:80px 40px;min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.cover h1{font-size:34px;border:none;text-align:center}
-.footer{margin-top:28px;padding-top:12px;border-top:1px solid #e0e7ff;color:#94a3b8;font-size:10px;text-align:center}
-@media print{body{padding:20px}}
+body{font-family:'Cairo',sans-serif;direction:rtl;background:#04031a;color:rgba(255,255,255,.92);font-size:11.5px;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
+
+/* ─ PAGE ─ */
+.page{padding:26px 28px 40px;min-height:100vh;page-break-after:always;background:#04031a;position:relative}
+.page:last-child{page-break-after:auto}
+
+/* ─ COVER ─ */
+.cover{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  min-height:100vh;background:linear-gradient(160deg,#0d0b30,#04031a)}
+.cico{font-size:72px;margin-bottom:20px}
+.ctitle{font-size:34px;font-weight:900;color:#a5b4fc;margin-bottom:10px}
+.csub{font-size:14px;color:rgba(255,255,255,.38);margin-bottom:30px}
+.cbox{background:rgba(99,102,241,.15);border:1px solid rgba(129,140,248,.28);border-radius:16px;padding:22px 48px}
+.ctot{font-size:21px;font-weight:900;color:#a5b4fc}
+.cusd{color:rgba(52,211,153,.9);font-size:14px;margin-top:6px}
+.cdate{color:rgba(255,255,255,.25);font-size:12px;margin-top:22px}
+
+/* ─ SUM PAGE ─ */
+.stitle{font-size:22px;font-weight:900;color:#fff;margin-bottom:5px}
+.ssub{color:rgba(255,255,255,.38);font-size:12px;margin-bottom:18px}
+.c4g{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:16px}
+.c4{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:12px;border-top:3px solid #6366f1}
+
+/* ─ YEAR PAGE ─ */
+.phdr{border-right:5px solid #818cf8;padding-right:14px;margin-bottom:16px}
+.pyear{font-size:28px;font-weight:900}
+.psub{color:rgba(255,255,255,.38);font-size:11.5px;margin-top:2px}
+.c6g{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
+.c6{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:11px;border-top:3px solid #818cf8}
+
+/* ─ SHARED CARD PARTS ─ */
+.clb{color:rgba(255,255,255,.33);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.cvl{font-size:13.5px;font-weight:900;line-height:1.3}
+.csb{color:rgba(255,255,255,.38);font-size:10px;margin-top:3px;direction:ltr}
+
+/* ─ CHART ─ */
+.chw{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:11px;
+  padding:13px 13px 5px;margin-bottom:14px;overflow:hidden}
+.chlb{color:rgba(255,255,255,.45);font-size:10.5px;font-weight:700;margin-bottom:9px}
+
+/* ─ TABLE ─ */
+table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px}
+th{padding:8px 9px;color:rgba(255,255,255,.32);font-size:9px;font-weight:700;text-align:center;
+   text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap;
+   background:rgba(255,255,255,.03)}
+td{padding:7px 9px;text-align:center;border-bottom:1px solid rgba(255,255,255,.04)}
+tr:nth-child(even)td{background:rgba(255,255,255,.02)}
+tfoot td{border-top:2px solid rgba(99,102,241,.32);background:rgba(99,102,241,.12)!important;font-weight:700;color:#fff;font-size:12px}
+
+/* ─ FOOTER ─ */
+.pfoot{position:absolute;bottom:14px;left:28px;right:28px;text-align:center;
+  color:rgba(255,255,255,.18);font-size:9.5px;border-top:1px solid rgba(255,255,255,.06);padding-top:9px}
+
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
+  body{background:#04031a!important}
+  .page,.cover{background:#04031a!important;min-height:0}
+}
 </style></head><body>
 
-<!-- Cover -->
-
-<div class="cover" style="page-break-after:always">
-  <div style="font-size:64px;margin-bottom:20px">📊</div>
-  <h1>تقرير إيرادات أرسيل الشامل</h1>
-  <p style="font-size:15px;color:#64748b;margin-top:12px">تحليل تفصيلي لجميع السنوات من 2019 إلى 2026</p>
-  <div style="margin-top:32px;background:#f0f0ff;border-radius:14px;padding:18px 36px;border:1px solid #e0e7ff;text-align:center">
-    <div style="color:#312e81;font-size:18px;font-weight:900">إجمالي الإيرادات: ${fSYP(grandTot)}</div>
-    <div style="color:#94a3b8;font-size:12px;margin-top:6px;direction:ltr">${fc(grandTot)} ل.س | ${fUSD(grandUSD)}</div>
+<!-- COVER -->
+<div class="page cover">
+  <div class="cico">📊</div>
+  <div class="ctitle">تقرير إيرادات أرسيل الشامل</div>
+  <div class="csub">تحليل تفصيلي لجميع السنوات من 2019 إلى 2026</div>
+  <div class="cbox">
+    <div class="ctot">إجمالي الإيرادات: ${fSYP(grandTot)}</div>
+    <div style="color:rgba(165,180,252,.65);font-size:12.5px;direction:ltr;margin-top:6px">${fc(grandTot)} ل.س</div>
+    <div class="cusd">${fUSD(grandUSD)}</div>
   </div>
-  <div style="margin-top:24px;color:#94a3b8;font-size:13px">تاريخ الإصدار: ${new Date().toLocaleDateString('ar-SY',{year:'numeric',month:'long',day:'numeric'})}</div>
+  <div class="cdate">تاريخ الإصدار: ${new Date().toLocaleDateString('ar-SY',{year:'numeric',month:'long',day:'numeric'})}</div>
 </div>
 
-<!-- Summary -->
-
-<div style="page-break-after:always">
-  <h1>📋 الملخص التنفيذي 2019–2026</h1>
-  <div class="meta">
-    إجمالي الإيرادات: ${fSYP(grandTot)} (${fc(grandTot)} ل.س)
-    <br>ما يعادل بالدولار: ${fUSD(grandUSD)}
-    <br>أعلى سنة إيراداً: ${YT.reduce((a,b)=>b.tot>a.tot?b:a).year}
+<!-- SUMMARY PAGE -->
+<div class="page">
+  <div class="stitle">📋 الملخص التنفيذي 2019 – 2026</div>
+  <div class="ssub">مقارنة شاملة لجميع السنوات مع الإيرادات الكاملة والنمو السنوي</div>
+  <div class="c4g">
+    <div class="c4"><div class="clb">إجمالي (ل.س)</div><div class="cvl" style="color:#818cf8">${fSYP(grandTot)}</div><div class="csb">${fc(grandTot)} ل.س</div></div>
+    <div class="c4" style="border-top-color:#34d399"><div class="clb">إجمالي ($)</div><div class="cvl" style="color:#34d399">${fUSD(grandUSD)}</div></div>
+    <div class="c4" style="border-top-color:#facc15"><div class="clb">أعلى سنة إيراداً</div><div class="cvl" style="color:#facc15">${best.year}</div><div class="csb">${fSYP(best.tot)}</div></div>
+    <div class="c4" style="border-top-color:#f472b6"><div class="clb">معدل نمو مركب</div><div class="cvl" style="color:#f472b6">~120%</div><div class="csb">CAGR 2019–2026</div></div>
   </div>
-  <div class="stats">
-    <div class="stat"><div class="stat-lb">إجمالي (ل.س)</div><div class="stat-vl">${fSYP(grandTot)}</div><div class="stat-sb" style="direction:ltr">${fc(grandTot)} ل.س</div></div>
-    <div class="stat" style="border-top-color:#34d399"><div class="stat-lb">إجمالي ($)</div><div class="stat-vl">${fUSD(grandUSD)}</div></div>
-    <div class="stat" style="border-top-color:#facc15"><div class="stat-lb">أعلى سنة</div><div class="stat-vl">${YT.reduce((a,b)=>b.tot>a.tot?b:a).year}</div></div>
-  </div>
-  <h2 style="color:#4338ca">جدول مقارنة سنوي شامل</h2>
-  <table><thead><tr>
-    <th>السنة</th><th>الإيراد الكامل</th><th>الإيراد (مختصر)</th><th>بالدولار</th><th>نمو سنوي</th><th>الحصة</th><th>سعر الصرف</th>
-  </tr></thead><tbody>${sumRows}</tbody>
-  <tfoot><tr>
-    <td>الإجمالي</td>
-    <td style="direction:ltr">${fc(grandTot)} ل.س</td>
-    <td>${fSYP(grandTot)}</td>
-    <td>${fUSD(grandUSD)}</td>
-    <td colspan="3">— — —</td>
-  </tr></tfoot></table>
+  <div class="chw"><div class="chlb">📈 تطور الإيرادات السنوية — الأرقام بالمليار ل.س</div>${svgSum(YT)}</div>
+  <table>
+    <thead><tr><th>السنة</th><th>الإيراد الكامل</th><th>الإيراد (مختصر)</th><th>بالدولار</th><th>نمو سنوي</th><th>نسبة من الكل</th><th>سعر الصرف</th></tr></thead>
+    <tbody>${sumRows}</tbody>
+    <tfoot><tr>
+      <td>الإجمالي الكلي</td>
+      <td style="direction:ltr;color:#a5b4fc">${fc(grandTot)} ل.س</td>
+      <td style="color:#7dd3fc">${fSYP(grandTot)}</td>
+      <td style="color:#34d399">${fUSD(grandUSD)}</td>
+      <td colspan="3" style="color:rgba(255,255,255,.3)">— 2019 → 2026 —</td>
+    </tr></tfoot>
+  </table>
+  <div class="pfoot">نظام إدارة إيرادات أرسيل | الملخص التنفيذي</div>
 </div>
 
-<!-- Year pages -->
-
+<!-- YEAR PAGES -->
 ${yearPages}
 
-<div class="footer">نظام إدارة إيرادات أرسيل | تقرير شامل 2019–2026 | ${new Date().toLocaleDateString('ar-SY')}</div>
-<script>window.onload=()=>window.print()<\/script>
 </body></html>`;
 
-setTimeout(()=>{
-const w=window.open(’’,’_blank’);
-w.document.write(fullHTML);
-w.document.close();
-toast(‘✅ تم فتح التقرير الكامل — اضغط Ctrl+P أو ⌘P للحفظ كـ PDF’);
-},300);
+  setTimeout(()=>{
+    openPrint(fullHTML);
+    toast('✅ تم فتح التقرير — من نافذة الطباعة اختر "حفظ كـ PDF"',4500);
+  },400);
 }
 
-/* ════════════════════════════════════════
-INIT
-════════════════════════════════════════ */
+function openPrint(html){
+  const w=window.open('','_blank');
+  if(!w){toast('❌ فعّل السماح بالنوافذ المنبثقة في المتصفح');return;}
+  w.document.write(html);
+  w.document.close();
+  w.addEventListener('load',()=>{setTimeout(()=>w.print(),600);},{once:true});
+}
+
+/* ════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════ */
 renderNav();
 renderView();
 </script>
-
 </body>
 </html>
