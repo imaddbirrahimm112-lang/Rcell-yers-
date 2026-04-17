@@ -1,1 +1,1284 @@
+<!DOCTYPE html>
 
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نظام إيرادات أرسيل</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600;700;900&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+```
+/* ── Root ── */
+body {
+  font-family: 'Noto Kufi Arabic', Tahoma, sans-serif;
+  background: #07050f;
+  color: #fff;
+  direction: rtl;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,.04); }
+::-webkit-scrollbar-thumb { background: rgba(139,92,246,.5); border-radius: 4px; }
+
+/* ── Background orbs ── */
+@keyframes orb1 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  50%      { transform: translate(40px,-50px) scale(1.15); }
+}
+@keyframes orb2 {
+  0%,100% { transform: translate(0,0) scale(1.1); }
+  50%      { transform: translate(-30px,40px) scale(0.85); }
+}
+.orb {
+  position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+}
+.orb1 {
+  width:600px; height:600px; top:-15%; right:-8%;
+  background: radial-gradient(circle, rgba(99,102,241,.22) 0%, transparent 70%);
+  animation: orb1 9s ease-in-out infinite;
+}
+.orb2 {
+  width:500px; height:500px; bottom:-20%; left:-10%;
+  background: radial-gradient(circle, rgba(139,92,246,.18) 0%, transparent 70%);
+  animation: orb2 11s ease-in-out infinite;
+}
+
+/* ── Glass card ── */
+.glass {
+  background: rgba(255,255,255,.07);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+}
+
+/* ── Layout wrapper ── */
+#app {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 18px;
+}
+
+/* ── Header ── */
+#header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 22px 28px;
+  margin-bottom: 18px;
+}
+#header h1 {
+  font-size: 24px;
+  font-weight: 900;
+  background: linear-gradient(90deg,#fff 0%,#a5b4fc 50%,#fff 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+#header p { color: rgba(255,255,255,.45); font-size: 12px; margin-top: 4px; }
+
+/* ── Sync badge ── */
+#sync-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  transition: all .3s;
+}
+.dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.dot-idle    { background: rgba(255,255,255,.3); }
+.dot-saving  { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
+.dot-ok      { background: #34d399; box-shadow: 0 0 8px #34d399; }
+.dot-error   { background: #f87171; box-shadow: 0 0 8px #f87171; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.4} }
+.dot-saving  { animation: blink .8s infinite; }
+
+/* ── Print button ── */
+#btn-print {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  transition: transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 14px rgba(16,185,129,.3);
+}
+#btn-print:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16,185,129,.5); }
+
+/* ── KPI cards row ── */
+#kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.kpi-card {
+  padding: 18px;
+  border-radius: 14px;
+  border-top: 3px solid;
+}
+.kpi-card .icon { font-size: 24px; margin-bottom: 8px; }
+.kpi-card .label { color: rgba(255,255,255,.45); font-size: 11px; margin-bottom: 4px; }
+.kpi-card .value { font-size: 16px; font-weight: 700; }
+
+/* ── Tabs ── */
+#tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+.tab {
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.07);
+  color: #fff;
+  transition: all .18s;
+  white-space: nowrap;
+}
+.tab:hover { background: rgba(255,255,255,.14); }
+.tab.active {
+  background: linear-gradient(135deg, rgba(99,102,241,.65), rgba(139,92,246,.65));
+  border-color: rgba(139,92,246,.5);
+  box-shadow: 0 4px 16px rgba(99,102,241,.3);
+}
+
+/* ── Panels ── */
+#panel-year, #panel-summary { display: none; }
+#panel-year.visible, #panel-summary.visible { display: block; }
+
+/* ── Section card ── */
+.section {
+  padding: 22px;
+  margin-bottom: 18px;
+}
+.section h2 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: rgba(255,255,255,.9);
+}
+
+/* ── Exchange rate row ── */
+#rate-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+}
+#rate-row label { font-size: 13px; font-weight: 700; color: rgba(255,255,255,.8); }
+#rate-row .rate-value { color: #34d399; font-weight: 700; font-size: 13px; }
+
+/* ── Input ── */
+.inp {
+  background: rgba(255,255,255,.09);
+  border: 1px solid rgba(255,255,255,.15);
+  color: #fff;
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-family: inherit;
+  font-size: 12px;
+  text-align: center;
+  direction: rtl;
+  outline: none;
+  width: 100%;
+  -webkit-appearance: none;
+  transition: border-color .18s, background .18s;
+}
+.inp:focus {
+  border-color: rgba(129,140,248,.7);
+  background: rgba(99,102,241,.12);
+}
+.inp::placeholder { color: rgba(255,255,255,.25); }
+/* hide number spinner arrows in most browsers */
+.inp[type=number]::-webkit-inner-spin-button,
+.inp[type=number]::-webkit-outer-spin-button { opacity: .3; }
+
+/* ── Table ── */
+.tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  direction: rtl;
+  min-width: 720px;
+}
+thead th {
+  padding: 10px 10px;
+  color: rgba(255,255,255,.5);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 8px 10px;
+  text-align: center;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+tbody tr:hover td { background: rgba(99,102,241,.07); }
+tfoot td {
+  padding: 11px 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  border-top: 2px solid rgba(99,102,241,.4);
+  background: rgba(99,102,241,.1);
+}
+
+/* ── Mini progress bar under revenue cell ── */
+.bar-wrap {
+  height: 3px;
+  background: rgba(255,255,255,.07);
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #818cf8, #6366f1);
+  transition: width .4s;
+}
+
+/* ── Badge pill ── */
+.pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ── Chart placeholder (canvas) ── */
+.chart-area {
+  width: 100%;
+  height: 220px;
+  position: relative;
+  overflow: hidden;
+}
+canvas { display: block; }
+
+/* ── Summary year badge ── */
+.yr-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ── Toggle chart type ── */
+.chart-toggle { display: flex; gap: 6px; }
+.ctbtn {
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.07);
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  transition: all .15s;
+}
+.ctbtn.active {
+  background: rgba(99,102,241,.5);
+  border-color: rgba(139,92,246,.5);
+}
+
+/* ── Section header row ── */
+.sec-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.sec-head h2 { margin-bottom: 0; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  #app { padding: 10px; }
+  #header { padding: 16px; }
+  #header h1 { font-size: 18px; }
+}
+```
+
+  </style>
+</head>
+<body>
+
+<!-- Background orbs -->
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div id="app">
+
+  <!-- ══════════════ HEADER ══════════════ -->
+
+  <div class="glass" id="header">
+    <div>
+      <h1>📊 نظام إيرادات أرسيل</h1>
+      <p>تقرير شامل ٢٠١٩ – ٢٠٢٦ · ل.س / دولار</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div id="sync-badge">
+        <span class="dot dot-idle" id="sync-dot"></span>
+        <span id="sync-text">جاري التهيئة…</span>
+      </div>
+      <button id="btn-print">📄 تصدير PDF</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ KPI CARDS ══════════════ -->
+
+  <div id="kpi-row">
+    <div class="glass kpi-card" style="border-top-color:#818cf8">
+      <div class="icon">💰</div>
+      <div class="label">إجمالي الإيرادات الكلي</div>
+      <div class="value" id="kpi-total-syp">—</div>
+    </div>
+    <div class="glass kpi-card" style="border-top-color:#34d399">
+      <div class="icon">💵</div>
+      <div class="label">بالدولار (تقديري)</div>
+      <div class="value" id="kpi-total-usd">—</div>
+    </div>
+    <div class="glass kpi-card" style="border-top-color:#f472b6">
+      <div class="icon">🏆</div>
+      <div class="label">أعلى سنة إيراداً</div>
+      <div class="value">٢٠٢٥</div>
+    </div>
+    <div class="glass kpi-card" style="border-top-color:#fb923c">
+      <div class="icon">📈</div>
+      <div class="label">نمو 2019 → 2025</div>
+      <div class="value">+67,565%</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ TABS ══════════════ -->
+
+  <div id="tabs">
+    <button class="tab" data-view="summary">📋 التقرير الشامل</button>
+    <!-- Year tabs injected by JS -->
+  </div>
+
+  <!-- ══════════════ YEAR PANEL ══════════════ -->
+
+  <div id="panel-year">
+
+```
+<!-- Year mini-KPIs -->
+<div id="year-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px;"></div>
+
+<!-- Exchange rate -->
+<div class="glass" id="rate-row">
+  <label>💱 سعر الصرف (ل.س/دولار) للسنة المختارة:</label>
+  <input type="number" id="inp-rate" class="inp" style="width:130px;" placeholder="سعر الصرف" />
+  <span class="rate-value" id="rate-usd-total">—</span>
+</div>
+
+<!-- Bar chart -->
+<div class="glass section">
+  <h2 id="year-chart-title">📊 الإيرادات الشهرية</h2>
+  <div class="chart-area">
+    <canvas id="canvas-year"></canvas>
+  </div>
+</div>
+
+<!-- Monthly table -->
+<div class="glass section">
+  <h2 id="year-table-title">📋 جدول الإيرادات الشهرية</h2>
+  <div class="tbl-wrap">
+    <table id="tbl-year">
+      <thead>
+        <tr>
+          <th>الشهر</th>
+          <th>الإيراد (ل.س)</th>
+          <th>السعر الوسط (ل.س)</th>
+          <th>عدد المشتركين</th>
+          <th>المعادل بالدولار</th>
+          <th>التراكمي</th>
+          <th>نسبة الشهر</th>
+        </tr>
+      </thead>
+      <tbody id="tbl-year-body"></tbody>
+      <tfoot id="tbl-year-foot"></tfoot>
+    </table>
+  </div>
+</div>
+```
+
+  </div><!-- /panel-year -->
+
+  <!-- ══════════════ SUMMARY PANEL ══════════════ -->
+
+  <div id="panel-summary">
+
+```
+<!-- Summary KPIs -->
+<div id="sum-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:18px;"></div>
+
+<!-- Main chart -->
+<div class="glass section">
+  <div class="sec-head">
+    <h2>📈 تطور الإيرادات السنوية 2019–2026</h2>
+    <div class="chart-toggle">
+      <button class="ctbtn active" id="ctbtn-bar" onclick="setSumChart('bar')">أعمدة</button>
+      <button class="ctbtn"        id="ctbtn-line" onclick="setSumChart('line')">خط</button>
+    </div>
+  </div>
+  <div class="chart-area" style="height:260px;">
+    <canvas id="canvas-summary"></canvas>
+  </div>
+</div>
+
+<!-- Yearly comparison table -->
+<div class="glass section">
+  <h2>📊 جدول مقارنة سنوي شامل</h2>
+  <div class="tbl-wrap">
+    <table id="tbl-summary">
+      <thead>
+        <tr>
+          <th>السنة</th>
+          <th>الإيراد (ل.س)</th>
+          <th>بالدولار</th>
+          <th>نمو عن السابق</th>
+          <th>نسبة من الإجمالي</th>
+          <th>سعر الصرف</th>
+        </tr>
+      </thead>
+      <tbody id="tbl-summary-body"></tbody>
+      <tfoot id="tbl-summary-foot"></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- Monthly comparison chart -->
+<div class="glass section">
+  <h2>📅 مقارنة شهرية بين السنوات</h2>
+  <div class="chart-area" style="height:260px;">
+    <canvas id="canvas-monthly"></canvas>
+  </div>
+</div>
+```
+
+  </div><!-- /panel-summary -->
+
+</div><!-- /app -->
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   CONSTANTS
+══════════════════════════════════════════════════════════════════ */
+var FB_URL  = 'https://imad222-default-rtdb.firebaseio.com/arsil-revenue.json';
+var LS_KEY  = 'arsil_v3';
+
+var MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو',
+              'يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+var YEARS  = [2019,2020,2021,2022,2023,2024,2025,2026];
+var COLORS = ['#818cf8','#a78bfa','#f472b6','#fb923c','#34d399','#60a5fa','#facc15','#2dd4bf'];
+
+var RAW = {
+  2019:[38084250,19983950,23198650,27622625,31045125,34842500,37218975,50843500,66747425,93943275,97494325,112823775],
+  2020:[136574000,123351500,187721550,169699150,228606200,144836000,280911950,341039500,385253000,315779250,393821500,533089250],
+  2021:[491820000,448707000,562156250,697661250,868148000,1022269250,1209652250,1468962250,1400745000,1721277750,1874772750,2010222750],
+  2022:[1899684500,2006812500,2334037000,2636149750,2595706500,3064715750,2972538000,3290905500,3191360500,3577532000,5520020000,4790398500],
+  2023:[5224877400,5208180000,5249960000,5403075000,5599065000,5796375000,6478005000,7766880000,8108445000,11272210000,17876090000,19332400000],
+  2024:[19945919950,19462057450,22003915000,23043125000,23654500000,23683425000,24866700000,25493505000,26770900000,28702650000,28651310000,26920065000],
+  2025:[26885925000,26180900000,33252025000,34014650000,33027850000,33587125000,36379575000,38866625000,39999025000,42055550000,41039050000,43781075000],
+  2026:[39529425000,30917575000,0,0,0,0,0,0,0,0,0,0]
+};
+var DEF_RATES = {2019:700,2020:1500,2021:3500,2022:4500,2023:7000,2024:12000,2025:13500,2026:14000};
+
+/* ══════════════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════════════ */
+var state = {
+  activeView: 'year',   /* 'year' | 'summary' */
+  activeYear: 2025,
+  sumChartType: 'bar',  /* 'bar' | 'line' */
+  data: null,           /* loaded below */
+  localTs: 0,
+  saveTimer: null
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   FORMATTERS
+══════════════════════════════════════════════════════════════════ */
+function num(v){ return Number(v) || 0; }
+
+function fmtSYP(v) {
+  var x = num(v);
+  if (!x) return '—';
+  if (x >= 1e12) return (x/1e12).toFixed(3) + ' تريليون';
+  if (x >= 1e9)  return (x/1e9).toFixed(3)  + ' مليار';
+  if (x >= 1e6)  return (x/1e6).toFixed(2)  + ' مليون';
+  return x.toLocaleString('ar-SY');
+}
+
+function fmtUSD(v) {
+  var x = num(v);
+  if (!x) return '—';
+  if (x >= 1e9) return '$' + (x/1e9).toFixed(3) + 'B';
+  if (x >= 1e6) return '$' + (x/1e6).toFixed(3) + 'M';
+  if (x >= 1e3) return '$' + (x/1e3).toFixed(1) + 'K';
+  return '$' + x.toFixed(0);
+}
+
+function fmtShort(v) {
+  var x = num(v);
+  if (!x) return '0';
+  if (x >= 1e9) return (x/1e9).toFixed(1) + ' مل';
+  if (x >= 1e6) return (x/1e6).toFixed(0) + ' م';
+  return x.toLocaleString();
+}
+
+function pct(a, b) { return b ? ((a/b)*100).toFixed(1) + '%' : '—'; }
+
+/* ══════════════════════════════════════════════════════════════════
+   DATA INIT
+══════════════════════════════════════════════════════════════════ */
+function buildDefaultData() {
+  var d = {};
+  YEARS.forEach(function(y) {
+    d[y] = {
+      rate: DEF_RATES[y],
+      months: RAW[y].map(function(r) { return { rev: r, price: 0 }; })
+    };
+  });
+  return d;
+}
+
+function loadLocalData() {
+  try {
+    var raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    var parsed = JSON.parse(raw);
+    if (parsed && parsed.data && parsed.ts) {
+      state.localTs = parsed.ts;
+      return parsed.data;
+    }
+  } catch(e) {}
+  return null;
+}
+
+function saveLocal(data, ts) {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({ ts: ts, data: data }));
+  } catch(e) {}
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   FIREBASE
+══════════════════════════════════════════════════════════════════ */
+function fbSave(data, cb) {
+  var payload = JSON.stringify({ ts: Date.now(), data: data });
+  fetch(FB_URL, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: payload
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  })
+  .then(function() { cb(null); })
+  .catch(function(e) { cb(e); });
+}
+
+function fbLoad(cb) {
+  fetch(FB_URL)
+  .then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  })
+  .then(function(d) { cb(null, d); })
+  .catch(function(e) { cb(e, null); });
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SYNC BADGE
+══════════════════════════════════════════════════════════════════ */
+function setSyncUI(status, text) {
+  var dot  = document.getElementById('sync-dot');
+  var span = document.getElementById('sync-text');
+  dot.className = 'dot';
+  switch(status) {
+    case 'saving': dot.classList.add('dot-saving'); break;
+    case 'ok':     dot.classList.add('dot-ok');     break;
+    case 'error':  dot.classList.add('dot-error');  break;
+    default:       dot.classList.add('dot-idle');
+  }
+  span.textContent = text;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SCHEDULE SAVE (debounced)
+══════════════════════════════════════════════════════════════════ */
+function scheduleSave() {
+  /* always save to localStorage immediately */
+  var ts = Date.now();
+  saveLocal(state.data, ts);
+
+  /* debounce Firebase save */
+  clearTimeout(state.saveTimer);
+  state.saveTimer = setTimeout(function() {
+    setSyncUI('saving', 'جاري الحفظ…');
+    var ts2 = Date.now();
+    state.localTs = ts2;
+    saveLocal(state.data, ts2);
+    fbSave(state.data, function(err) {
+      if (err) {
+        setSyncUI('error', 'خطأ في الاتصال — محفوظ محلياً');
+      } else {
+        setSyncUI('ok', 'تم الحفظ ✓');
+        setTimeout(function(){ setSyncUI('idle', 'متزامن'); }, 3000);
+      }
+    });
+  }, 1500);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DERIVED HELPERS
+══════════════════════════════════════════════════════════════════ */
+function yearTotal(y) {
+  return state.data[y].months.reduce(function(s,m){ return s + num(m.rev); }, 0);
+}
+function yearUSD(y) {
+  var tot = yearTotal(y);
+  var rate = num(state.data[y].rate);
+  return rate > 0 ? tot / rate : 0;
+}
+function grandTotal() {
+  return YEARS.reduce(function(s,y){ return s + yearTotal(y); }, 0);
+}
+function grandUSD() {
+  return YEARS.reduce(function(s,y){ return s + yearUSD(y); }, 0);
+}
+function yearGrowth(y) {
+  if (y <= 2019) return null;
+  var cur  = yearTotal(y);
+  var prev = yearTotal(y - 1);
+  return prev > 0 ? ((cur - prev) / prev * 100) : null;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   CANVAS CHARTS  (lightweight, no external library needed)
+══════════════════════════════════════════════════════════════════ */
+function clearCanvas(id) {
+  var canvas = document.getElementById(id);
+  if (!canvas) return null;
+  canvas.width  = canvas.parentElement.clientWidth  || 800;
+  canvas.height = canvas.parentElement.clientHeight || 220;
+  var ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  return ctx;
+}
+
+/* Draw bar chart – data: [{label, value, color}] */
+function drawBarChart(id, items, maxVal) {
+  var ctx = clearCanvas(id);
+  if (!ctx || !items.length) return;
+  var W = ctx.canvas.width, H = ctx.canvas.height;
+  var padL=10, padR=10, padT=20, padB=40;
+  var chartW = W - padL - padR;
+  var chartH = H - padT - padB;
+  var barW   = Math.max(4, (chartW / items.length) * 0.6);
+  var gap    = (chartW - barW * items.length) / (items.length + 1);
+  var topVal = maxVal || Math.max.apply(null, items.map(function(d){ return d.value; })) || 1;
+
+  /* grid lines */
+  ctx.strokeStyle = 'rgba(255,255,255,.07)';
+  ctx.lineWidth = 1;
+  for (var g = 0; g <= 4; g++) {
+    var gy = padT + (chartH / 4) * g;
+    ctx.beginPath();
+    ctx.moveTo(padL, gy);
+    ctx.lineTo(W - padR, gy);
+    ctx.stroke();
+    /* y label */
+    var yVal = topVal * (1 - g/4);
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    ctx.font = '9px Tahoma';
+    ctx.textAlign = 'left';
+    ctx.fillText(fmtShort(yVal), 2, gy + 3);
+  }
+
+  items.forEach(function(item, i) {
+    var x = padL + gap + i * (barW + gap);
+    var bh = (num(item.value) / topVal) * chartH;
+    var y  = padT + chartH - bh;
+
+    /* gradient fill */
+    var grad = ctx.createLinearGradient(0, y, 0, padT + chartH);
+    grad.addColorStop(0,   item.color || '#818cf8');
+    grad.addColorStop(1,   'rgba(0,0,0,.2)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(x, y, barW, bh, [4,4,0,0])
+                  : ctx.rect(x, y, barW, bh);
+    ctx.fill();
+
+    /* x label */
+    ctx.fillStyle = 'rgba(255,255,255,.6)';
+    ctx.font = '9px Noto Kufi Arabic,Tahoma';
+    ctx.textAlign = 'center';
+    ctx.fillText(item.label, x + barW/2, padT + chartH + 14);
+  });
+}
+
+/* Draw line chart – series: [{label, values[], color}], xLabels: [] */
+function drawLineChart(id, series, xLabels) {
+  var ctx = clearCanvas(id);
+  if (!ctx || !series.length) return;
+  var W = ctx.canvas.width, H = ctx.canvas.height;
+  var padL=10, padR=10, padT=20, padB=40;
+  var chartW = W - padL - padR;
+  var chartH = H - padT - padB;
+
+  var allVals = [];
+  series.forEach(function(s){ s.values.forEach(function(v){ allVals.push(v); }); });
+  var topVal = Math.max.apply(null, allVals) || 1;
+  var n = xLabels.length;
+
+  /* grid */
+  ctx.strokeStyle = 'rgba(255,255,255,.07)';
+  ctx.lineWidth = 1;
+  for (var g = 0; g <= 4; g++) {
+    var gy = padT + (chartH/4)*g;
+    ctx.beginPath();
+    ctx.moveTo(padL, gy); ctx.lineTo(W-padR, gy);
+    ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.3)';
+    ctx.font='9px Tahoma';
+    ctx.textAlign='left';
+    ctx.fillText(fmtShort(topVal*(1-g/4)), 2, gy+3);
+  }
+
+  /* x labels */
+  xLabels.forEach(function(lbl, i) {
+    var x = padL + (i/(n-1)) * chartW;
+    ctx.fillStyle='rgba(255,255,255,.5)';
+    ctx.font='9px Noto Kufi Arabic,Tahoma';
+    ctx.textAlign='center';
+    ctx.fillText(lbl, x, H - padB + 14);
+  });
+
+  /* lines */
+  series.forEach(function(s) {
+    ctx.beginPath();
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth   = 2;
+    s.values.forEach(function(v, i) {
+      var x = padL + (i/(n-1||1)) * chartW;
+      var y = padT + chartH - (v/topVal)*chartH;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+
+    /* fill under line */
+    var grad = ctx.createLinearGradient(0, padT, 0, padT+chartH);
+    grad.addColorStop(0, s.color.replace(')',', .3)').replace('rgb(','rgba(').replace('#', 'rgba(').replace(/^rgba\(([0-9a-f]+)\)/i, function(_,h){ /* fallback */ return 'rgba(129,140,248,.2)'; }));
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.lineTo(padL + chartW, padT + chartH);
+    ctx.lineTo(padL, padT + chartH);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RENDER: YEAR PANEL
+══════════════════════════════════════════════════════════════════ */
+function renderYear() {
+  var y    = state.activeYear;
+  var yd   = state.data[y];
+  var rate = num(yd.rate);
+  var tot  = yearTotal(y);
+  var usd  = rate > 0 ? tot / rate : 0;
+  var gt   = grandTotal();
+  var growth = yearGrowth(y);
+  var maxRev = Math.max.apply(null, yd.months.map(function(m){ return num(m.rev); })) || 1;
+
+  /* titles */
+  document.getElementById('year-chart-title').textContent = '📊 الإيرادات الشهرية — ' + y;
+  document.getElementById('year-table-title').textContent = '📋 جدول الإيرادات الشهرية — ' + y;
+  document.getElementById('rate-usd-total').textContent   = 'الإجمالي: ' + fmtUSD(usd);
+  document.getElementById('inp-rate').value = rate || '';
+
+  /* mini KPI cards */
+  var growthCard = growth !== null
+    ? { icon: growth >= 0 ? '📈':'📉', label:'نمو عن العام السابق', val:(growth>=0?'+':'')+growth.toFixed(1)+'%', color: growth>=0?'#34d399':'#f87171' }
+    : { icon:'🗓️', label:'أول سنة مرصودة', val:'٢٠١٩', color:'#a78bfa' };
+
+  var miniCards = [
+    { icon:'💰', label:'إجمالي '+y,     val:fmtSYP(tot),    color:'#818cf8' },
+    { icon:'💵', label:'بالدولار',       val:fmtUSD(usd),    color:'#34d399' },
+    { icon:'📊', label:'متوسط شهري',    val:fmtSYP(tot/12), color:'#fb923c' },
+    growthCard,
+    { icon:'🎯', label:'نسبة من الإجمالي', val:pct(tot,gt),  color:'#f472b6' }
+  ];
+
+  var kpiEl = document.getElementById('year-kpis');
+  kpiEl.innerHTML = miniCards.map(function(c) {
+    return '<div class="glass kpi-card" style="border-top-color:'+c.color+'">'
+         + '<div class="icon">'+c.icon+'</div>'
+         + '<div class="label">'+c.label+'</div>'
+         + '<div class="value" style="color:'+c.color+'">'+c.val+'</div>'
+         + '</div>';
+  }).join('');
+
+  /* bar chart */
+  var barItems = yd.months.map(function(m, i) {
+    return { label: MONTHS[i].slice(0,3), value: num(m.rev), color: '#818cf8' };
+  });
+  setTimeout(function(){ drawBarChart('canvas-year', barItems, maxRev); }, 50);
+
+  /* monthly table */
+  var cum = 0;
+  var bodyHTML = yd.months.map(function(m, i) {
+    cum += num(m.rev);
+    var rev   = num(m.rev);
+    var price = num(m.price);
+    var usdM  = rate > 0 ? rev / rate : 0;
+    var subs  = price > 0 ? Math.round(rev / price) : null;
+    var share = tot > 0 ? (rev/tot*100) : 0;
+    var bar   = maxRev > 0 ? Math.round((rev/maxRev)*100) : 0;
+
+    return '<tr>'
+      + '<td style="font-weight:700;color:rgba(255,255,255,.85)">'+MONTHS[i]+'</td>'
+      + '<td>'
+      +   '<input type="number" class="inp" data-year="'+y+'" data-mi="'+i+'" data-field="rev" value="'+(rev||'')+'" placeholder="0" />'
+      +   (rev > 0 ? '<div class="bar-wrap"><div class="bar-fill" style="width:'+bar+'%"></div></div>' : '')
+      + '</td>'
+      + '<td><input type="number" class="inp" data-year="'+y+'" data-mi="'+i+'" data-field="price" value="'+(price||'')+'" placeholder="السعر" /></td>'
+      + '<td style="color:'+(subs?'#a5b4fc':'rgba(255,255,255,.3)')+';">'+(subs?subs.toLocaleString('ar-SY'):'—')+'</td>'
+      + '<td style="color:#34d399;">'+fmtUSD(usdM)+'</td>'
+      + '<td style="color:rgba(255,255,255,.6);font-size:11px;">'+fmtSYP(cum)+'</td>'
+      + '<td><span class="pill" style="background:rgba(99,102,241,'+Math.max(.1,share/100)+');border:1px solid rgba(129,140,248,.3)">'+share.toFixed(1)+'%</span></td>'
+      + '</tr>';
+  }).join('');
+
+  document.getElementById('tbl-year-body').innerHTML = bodyHTML;
+  document.getElementById('tbl-year-foot').innerHTML =
+    '<tr>'
+    + '<td>الإجمالي</td>'
+    + '<td colspan="2" style="color:#a5b4fc;">'+fmtSYP(tot)+'</td>'
+    + '<td style="color:rgba(255,255,255,.35);">—</td>'
+    + '<td style="color:#34d399;">'+fmtUSD(usd)+'</td>'
+    + '<td style="color:#a5b4fc;">'+fmtSYP(tot)+'</td>'
+    + '<td>100%</td>'
+    + '</tr>';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RENDER: SUMMARY PANEL
+══════════════════════════════════════════════════════════════════ */
+function renderSummary() {
+  var gt   = grandTotal();
+  var gusd = grandUSD();
+
+  /* find best year */
+  var bestY = YEARS[0], bestTot = 0;
+  YEARS.forEach(function(y){ var t=yearTotal(y); if(t>bestTot){bestTot=t;bestY=y;} });
+
+  /* summary KPIs */
+  var sumCards = [
+    { icon:'🏦', label:'إجمالي كل السنوات (ل.س)', val:fmtSYP(gt),   color:'#818cf8' },
+    { icon:'💵', label:'إجمالي كل السنوات ($)',    val:fmtUSD(gusd), color:'#34d399' },
+    { icon:'🏆', label:'أعلى سنة إيراداً',         val:bestY+' — '+fmtSYP(bestTot), color:'#fbbf24' },
+    { icon:'📈', label:'معدل نمو CAGR (تقريبي)',   val:'~120%',      color:'#f472b6' }
+  ];
+  document.getElementById('sum-kpis').innerHTML = sumCards.map(function(c) {
+    return '<div class="glass kpi-card" style="border-top-color:'+c.color+'">'
+         + '<div class="icon">'+c.icon+'</div>'
+         + '<div class="label">'+c.label+'</div>'
+         + '<div class="value" style="color:'+c.color+'">'+c.val+'</div>'
+         + '</div>';
+  }).join('');
+
+  /* main chart */
+  renderSumChart();
+
+  /* yearly table */
+  var tbody = '';
+  YEARS.forEach(function(y, i) {
+    var tot    = yearTotal(y);
+    var usd    = yearUSD(y);
+    var growth = yearGrowth(y);
+    var share  = gt > 0 ? (tot/gt*100) : 0;
+    var rate   = num(state.data[y].rate);
+
+    tbody += '<tr>'
+      + '<td><span class="yr-badge" style="background:linear-gradient(135deg,'+COLORS[i]+','+COLORS[(i+1)%COLORS.length]+')">'+y+'</span></td>'
+      + '<td style="color:#a5b4fc;font-weight:600;">'+fmtSYP(tot)+'</td>'
+      + '<td style="color:#34d399;font-weight:600;">'+fmtUSD(usd)+'</td>'
+      + '<td>'
+      +   (growth!==null ? '<span style="color:'+(growth>=0?'#34d399':'#f87171')+';font-weight:700;">'+(growth>=0?'+':'')+growth.toFixed(1)+'%</span>' : '<span style="color:rgba(255,255,255,.3)">—</span>')
+      + '</td>'
+      + '<td>'
+      +   '<div style="display:flex;align-items:center;gap:6px;justify-content:center;">'
+      +   '<div style="height:5px;width:55px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;">'
+      +   '<div style="height:100%;width:'+share.toFixed(1)+'%;background:linear-gradient(90deg,'+COLORS[i]+','+COLORS[(i+1)%COLORS.length]+');border-radius:3px;"></div></div>'
+      +   '<span style="font-size:12px;color:rgba(255,255,255,.7);">'+pct(tot,gt)+'</span>'
+      +   '</div>'
+      + '</td>'
+      + '<td><input type="number" class="inp" data-year="'+y+'" data-field="rate" value="'+(rate||'')+'" placeholder="سعر الصرف" style="width:110px;" /></td>'
+      + '</tr>';
+  });
+  document.getElementById('tbl-summary-body').innerHTML = tbody;
+  document.getElementById('tbl-summary-foot').innerHTML =
+    '<tr>'
+    + '<td>الإجمالي</td>'
+    + '<td colspan="2" style="color:#a5b4fc;">'+fmtSYP(gt)+' / '+fmtUSD(gusd)+'</td>'
+    + '<td colspan="3" style="color:rgba(255,255,255,.3);">— — —</td>'
+    + '</tr>';
+
+  /* monthly comparison line chart */
+  var series = YEARS.map(function(y, i) {
+    return {
+      label: y,
+      color: COLORS[i],
+      values: state.data[y].months.map(function(m){ return num(m.rev)/1e9; })
+    };
+  });
+  var xLabels = MONTHS.map(function(m){ return m.slice(0,3); });
+  setTimeout(function(){ drawLineChart('canvas-monthly', series, xLabels); }, 60);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SUMMARY CHART (bar or line) toggler
+══════════════════════════════════════════════════════════════════ */
+function setSumChart(type) {
+  state.sumChartType = type;
+  document.getElementById('ctbtn-bar').classList.toggle('active',  type==='bar');
+  document.getElementById('ctbtn-line').classList.toggle('active', type==='line');
+  renderSumChart();
+}
+
+function renderSumChart() {
+  if (state.sumChartType === 'bar') {
+    var items = YEARS.map(function(y, i) {
+      return { label: ''+y, value: yearTotal(y), color: COLORS[i] };
+    });
+    setTimeout(function(){ drawBarChart('canvas-summary', items); }, 50);
+  } else {
+    var series = [{
+      label: 'مليار ل.س',
+      color: '#818cf8',
+      values: YEARS.map(function(y){ return yearTotal(y)/1e9; })
+    }];
+    var xLabels = YEARS.map(function(y){ return ''+y; });
+    setTimeout(function(){ drawLineChart('canvas-summary', series, xLabels); }, 50);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SHOW / HIDE PANELS
+══════════════════════════════════════════════════════════════════ */
+function showView(view) {
+  state.activeView = view;
+
+  document.getElementById('panel-year').classList.toggle('visible',    view==='year');
+  document.getElementById('panel-summary').classList.toggle('visible', view==='summary');
+
+  /* update tab active state */
+  document.querySelectorAll('.tab').forEach(function(btn) {
+    var bv = btn.dataset.view;
+    var by = parseInt(btn.dataset.year);
+    if (bv === 'summary') {
+      btn.classList.toggle('active', view==='summary');
+    } else {
+      btn.classList.toggle('active', view==='year' && by===state.activeYear);
+    }
+  });
+
+  if (view === 'year')    renderYear();
+  if (view === 'summary') renderSummary();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   BUILD TABS
+══════════════════════════════════════════════════════════════════ */
+function buildTabs() {
+  var tabs = document.getElementById('tabs');
+  /* summary tab is already in HTML */
+  YEARS.forEach(function(y, i) {
+    var btn = document.createElement('button');
+    btn.className    = 'tab';
+    btn.dataset.view = 'year';
+    btn.dataset.year = y;
+    btn.textContent  = y;
+    btn.style.borderTop = '2px solid transparent';
+    btn.addEventListener('click', function() {
+      state.activeYear = y;
+      showView('year');
+    });
+    tabs.appendChild(btn);
+  });
+  /* summary tab click */
+  tabs.querySelector('[data-view="summary"]').addEventListener('click', function() {
+    showView('summary');
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   INPUT DELEGATION
+══════════════════════════════════════════════════════════════════ */
+document.addEventListener('input', function(e) {
+  var el = e.target;
+  if (!el.matches('.inp')) return;
+
+  var field = el.dataset.field;
+  var y     = parseInt(el.dataset.year);
+  var mi    = el.dataset.mi !== undefined ? parseInt(el.dataset.mi) : null;
+  var val   = num(el.value);
+
+  if (!field || !y) return;
+
+  if (field === 'rate') {
+    state.data[y].rate = val;
+    if (state.activeView === 'year' && y === state.activeYear) {
+      document.getElementById('rate-usd-total').textContent =
+        'الإجمالي: ' + fmtUSD(state.data[y].rate > 0 ? yearTotal(y)/state.data[y].rate : 0);
+    }
+  } else if (field === 'rev' && mi !== null) {
+    state.data[y].months[mi].rev = val;
+  } else if (field === 'price' && mi !== null) {
+    state.data[y].months[mi].price = val;
+  }
+
+  /* update global KPIs */
+  updateGlobalKPIs();
+  scheduleSave();
+});
+
+/* rate input in year panel */
+document.getElementById('inp-rate').addEventListener('input', function() {
+  var y   = state.activeYear;
+  var val = num(this.value);
+  state.data[y].rate = val;
+  document.getElementById('rate-usd-total').textContent =
+    'الإجمالي: ' + fmtUSD(val > 0 ? yearTotal(y)/val : 0);
+  updateGlobalKPIs();
+  scheduleSave();
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GLOBAL KPI UPDATE
+══════════════════════════════════════════════════════════════════ */
+function updateGlobalKPIs() {
+  document.getElementById('kpi-total-syp').textContent = fmtSYP(grandTotal());
+  document.getElementById('kpi-total-usd').textContent = fmtUSD(grandUSD());
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   PDF / PRINT
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('btn-print').addEventListener('click', function() {
+  var y   = state.activeYear;
+  var yd  = state.data[y];
+  var tot = yearTotal(y);
+  var usd = yearUSD(y);
+  var gt  = grandTotal();
+  var gu  = grandUSD();
+
+  var yearRows = YEARS.map(function(yr) {
+    var t = yearTotal(yr);
+    var u = yearUSD(yr);
+    var g = yearGrowth(yr);
+    var s = gt > 0 ? (t/gt*100).toFixed(2) : 0;
+    return '<tr><td>'+yr+'</td><td>'+fmtSYP(t)+'</td><td>'+fmtUSD(u)+'</td>'
+         + '<td>'+(g!==null?(g>=0?'+':'')+g.toFixed(1)+'%':'—')+'</td>'
+         + '<td>'+s+'%</td><td>'+num(state.data[yr].rate).toLocaleString()+' ل.س</td></tr>';
+  }).join('');
+
+  var rate = num(yd.rate);
+  var monthRows = yd.months.map(function(m, i) {
+    var rev   = num(m.rev);
+    var price = num(m.price);
+    var usdM  = rate > 0 ? rev/rate : 0;
+    var subs  = price > 0 ? Math.round(rev/price) : null;
+    var share = tot > 0 ? (rev/tot*100).toFixed(2) : 0;
+    return '<tr><td>'+MONTHS[i]+'</td><td>'+(rev?rev.toLocaleString()+' ل.س':'—')+'</td>'
+         + '<td>'+(price?price.toLocaleString()+' ل.س':'—')+'</td>'
+         + '<td>'+(subs?subs.toLocaleString():'—')+'</td>'
+         + '<td>'+fmtUSD(usdM)+'</td><td>'+share+'%</td></tr>';
+  }).join('');
+
+  var win = window.open('', '_blank');
+  win.document.write('<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8">'
+    + '<link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600;700;900&display=swap" rel="stylesheet">'
+    + '<title>تقرير إيرادات أرسيل</title>'
+    + '<style>'
+    + '*{box-sizing:border-box;margin:0;padding:0}'
+    + 'body{font-family:"Noto Kufi Arabic",Tahoma,sans-serif;direction:rtl;background:#fff;color:#1a1a2e;padding:36px}'
+    + 'h1{font-size:26px;font-weight:900;color:#312e81;border-bottom:4px solid #6366f1;padding-bottom:10px;margin-bottom:8px}'
+    + 'h2{font-size:16px;font-weight:700;color:#4338ca;margin:28px 0 10px}'
+    + '.meta{color:#64748b;font-size:12px;margin-bottom:24px}'
+    + '.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}'
+    + '.stat{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:10px;padding:14px;text-align:center}'
+    + '.sl{font-size:10px;opacity:.8;margin-bottom:4px}.sv{font-size:16px;font-weight:700}'
+    + 'table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:26px}'
+    + 'th{background:linear-gradient(135deg,#312e81,#4c1d95);color:#fff;padding:9px 10px;text-align:center;font-weight:600}'
+    + 'td{padding:8px 10px;border-bottom:1px solid #e2e8f0;text-align:center}'
+    + 'tr:nth-child(even){background:#f8f7ff}'
+    + 'tfoot td{background:linear-gradient(135deg,#312e81,#4c1d95);color:#fff;font-weight:700}'
+    + '.footer{margin-top:36px;text-align:center;color:#94a3b8;font-size:11px;border-top:1px solid #e2e8f0;padding-top:16px}'
+    + '@media print{body{padding:16px}}'
+    + '</style></head><body>'
+
+```
++ '<h1>تقرير إيرادات أرسيل الشامل</h1>'
++ '<div class="meta">تاريخ الإصدار: '+new Date().toLocaleDateString('ar-SY')+' | الفترة: 2019 — 2026</div>'
++ '<div class="stats">'
++ '<div class="stat"><div class="sl">إجمالي الإيرادات الكلي</div><div class="sv">'+fmtSYP(gt)+'</div></div>'
++ '<div class="stat"><div class="sl">بالدولار (تقديري)</div><div class="sv">'+fmtUSD(gu)+'</div></div>'
++ '<div class="stat"><div class="sl">أعلى سنة إيراداً</div><div class="sv">2025</div></div>'
++ '<div class="stat"><div class="sl">عدد السنوات</div><div class="sv">8 سنوات</div></div>'
++ '</div>'
++ '<h2>ملخص الإيرادات السنوية (2019 – 2026)</h2>'
++ '<table><thead><tr><th>السنة</th><th>الإيراد (ل.س)</th><th>بالدولار</th><th>نمو</th><th>نسبة من الإجمالي</th><th>سعر الصرف</th></tr></thead>'
++ '<tbody>'+yearRows+'</tbody>'
++ '<tfoot><tr><td>الإجمالي</td><td>'+fmtSYP(gt)+'</td><td>'+fmtUSD(gu)+'</td><td>—</td><td>100%</td><td>—</td></tr></tfoot></table>'
++ '<h2>تفصيل شهري لسنة '+y+'</h2>'
++ '<table><thead><tr><th>الشهر</th><th>الإيراد</th><th>السعر الوسط</th><th>المشتركون</th><th>بالدولار</th><th>نسبة الشهر</th></tr></thead>'
++ '<tbody>'+monthRows+'</tbody>'
++ '<tfoot><tr><td>الإجمالي</td><td colspan="2">'+fmtSYP(tot)+'</td><td>—</td><td>'+fmtUSD(usd)+'</td><td>100%</td></tr></tfoot></table>'
++ '<div class="footer">نظام إيرادات أرسيل — تم إنشاء هذا التقرير تلقائياً</div>'
++ '<script>setTimeout(function(){window.print();},400);<\/script>'
++ '</body></html>');
+```
+
+win.document.close();
+});
+
+/* ══════════════════════════════════════════════════════════════════
+RESIZE: redraw charts
+══════════════════════════════════════════════════════════════════ */
+var resizeTimer;
+window.addEventListener(‘resize’, function() {
+clearTimeout(resizeTimer);
+resizeTimer = setTimeout(function() {
+if (state.activeView === ‘year’)    renderYear();
+if (state.activeView === ‘summary’) renderSummary();
+}, 200);
+});
+
+/* ══════════════════════════════════════════════════════════════════
+POLLING (every 8 seconds)
+══════════════════════════════════════════════════════════════════ */
+function pollFirebase() {
+fbLoad(function(err, remote) {
+if (err || !remote || !remote.ts || !remote.data) return;
+if (remote.ts > state.localTs) {
+state.localTs = remote.ts;
+state.data    = remote.data;
+saveLocal(remote.data, remote.ts);
+updateGlobalKPIs();
+if (state.activeView === ‘year’)    renderYear();
+if (state.activeView === ‘summary’) renderSummary();
+setSyncUI(‘ok’, ‘تحديث من جهاز آخر ✓’);
+setTimeout(function(){ setSyncUI(‘idle’, ‘متزامن’); }, 3000);
+}
+});
+}
+
+/* ══════════════════════════════════════════════════════════════════
+BOOT
+══════════════════════════════════════════════════════════════════ */
+(function boot() {
+/* 1. Try local data first for instant render */
+var local = loadLocalData();
+state.data = local || buildDefaultData();
+
+/* 2. Build UI */
+buildTabs();
+updateGlobalKPIs();
+showView(‘year’);   /* default: year 2025 */
+
+/* 3. Load from Firebase */
+setSyncUI(‘saving’, ‘جاري الاتصال بـ Firebase…’);
+fbLoad(function(err, remote) {
+if (err) {
+setSyncUI(‘error’, ‘لا يوجد اتصال — يعمل محلياً’);
+return;
+}
+if (!remote || !remote.ts || !remote.data) {
+/* Firebase is empty — push local data */
+setSyncUI(‘saving’, ‘رفع البيانات الأولية…’);
+var ts = Date.now();
+state.localTs = ts;
+fbSave(state.data, function(e) {
+if (e) setSyncUI(‘error’, ‘فشل الرفع الأولي’);
+else   setSyncUI(‘ok’, ‘تم الرفع الأولي ✓’);
+setTimeout(function(){ setSyncUI(‘idle’, ‘متزامن’); }, 3000);
+});
+return;
+}
+/* Firebase has data */
+if (remote.ts > state.localTs) {
+state.localTs = remote.ts;
+state.data    = remote.data;
+saveLocal(remote.data, remote.ts);
+updateGlobalKPIs();
+showView(state.activeView);
+setSyncUI(‘ok’, ‘تم التحديث من السحابة ✓’);
+} else {
+setSyncUI(‘ok’, ‘متزامن ✓’);
+}
+setTimeout(function(){ setSyncUI(‘idle’, ‘متزامن’); }, 3000);
+});
+
+/* 4. Start polling */
+setInterval(pollFirebase, 8000);
+})();
+</script>
+
+</body>
+</html>
