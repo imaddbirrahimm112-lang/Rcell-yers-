@@ -467,10 +467,56 @@
   </div>
 </div>
 
-<script>
-var FB_URL  = 'https://imad222-default-rtdb.firebaseio.com/arsil-revenue.json';
-var LS_KEY  = 'arsil_v3';
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyA1SUY7jsBxvk73So-NIFncxMs5xyTf5gM",
+  authDomain: "imad222.firebaseapp.com",
+  databaseURL: "https://imad222-default-rtdb.firebaseio.com",
+  projectId: "imad222",
+  storageBucket: "imad222.firebasestorage.app",
+  messagingSenderId: "916772184467",
+  appId: "1:916772184467:web:5679a426e5bdbc82638866",
+  measurementId: "G-4P65YVN10S"
+};
+
+const FIREBASE_REST_FALLBACK_URL = "https://imad222-default-rtdb.firebaseio.com/arsil-revenue.json";
+const FIREBASE_NODE_PATH = "arsil-revenue";
+const LS_KEY  = "arsil_v3";
+
+let firebaseApp = null;
+let firebaseDb = null;
+let firebaseNodeRef = null;
+
+function firebaseIsConfigured() {
+  return !!(
+    FIREBASE_CONFIG.apiKey &&
+    FIREBASE_CONFIG.authDomain &&
+    FIREBASE_CONFIG.databaseURL &&
+    FIREBASE_CONFIG.projectId &&
+    FIREBASE_CONFIG.storageBucket &&
+    FIREBASE_CONFIG.messagingSenderId &&
+    FIREBASE_CONFIG.appId &&
+    !String(FIREBASE_CONFIG.apiKey).includes("ضع_")
+  );
+}
+
+function initFirebase() {
+  if (!firebaseIsConfigured()) return false;
+  try {
+    firebaseApp = initializeApp(FIREBASE_CONFIG);
+    firebaseDb = getDatabase(firebaseApp);
+    firebaseNodeRef = ref(firebaseDb, FIREBASE_NODE_PATH);
+    return true;
+  } catch (err) {
+    console.error("Firebase init error:", err);
+    return false;
+  }
+}
+
+const HAS_FIREBASE_SDK = initFirebase();
 var MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 var YEARS  = [2019,2020,2021,2022,2023,2024,2025,2026];
 var COLORS = ['#818cf8','#a78bfa','#f472b6','#fb923c','#34d399','#60a5fa','#facc15','#2dd4bf'];
@@ -570,9 +616,19 @@ function saveLocal(data, ts) {
   } catch(e) {}
 }
 
+
 function fbSave(data, cb) {
-  var payload = JSON.stringify({ ts: Date.now(), data: data });
-  fetch(FB_URL, {
+  var payloadObj = { ts: Date.now(), data: data };
+
+  if (HAS_FIREBASE_SDK && firebaseNodeRef) {
+    set(firebaseNodeRef, payloadObj)
+      .then(function() { cb(null); })
+      .catch(function(err) { cb(err); });
+    return;
+  }
+
+  var payload = JSON.stringify(payloadObj);
+  fetch(FIREBASE_REST_FALLBACK_URL, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: payload
@@ -586,7 +642,14 @@ function fbSave(data, cb) {
 }
 
 function fbLoad(cb) {
-  fetch(FB_URL)
+  if (HAS_FIREBASE_SDK && firebaseNodeRef) {
+    get(firebaseNodeRef)
+      .then(function(snapshot) { cb(null, snapshot.val()); })
+      .catch(function(err) { cb(err, null); });
+    return;
+  }
+
+  fetch(FIREBASE_REST_FALLBACK_URL)
   .then(function(r) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
@@ -934,6 +997,7 @@ function setSumChart(type) {
   document.getElementById('ctbtn-line').classList.toggle('active', type === 'line');
   renderSumChart();
 }
+window.setSumChart = setSumChart;
 
 function renderSumChart() {
   if (state.sumChartType === 'bar') {
@@ -1119,20 +1183,39 @@ window.addEventListener('resize', function() {
   }, 200);
 });
 
+
+function applyRemoteSnapshot(remote, sourceLabel) {
+  if (!remote || !remote.ts || !remote.data) return;
+  if (remote.ts > state.localTs) {
+    state.localTs = remote.ts;
+    state.data = remote.data;
+    saveLocal(remote.data, remote.ts);
+    updateGlobalKPIs();
+    if (state.activeView === 'year') renderYear();
+    if (state.activeView === 'summary') renderSummary();
+    setSyncUI('ok', sourceLabel || 'تحديث من جهاز آخر ✓');
+    setTimeout(function(){ setSyncUI('idle', 'متزامن'); }, 3000);
+  }
+}
+
 function pollFirebase() {
   fbLoad(function(err, remote) {
-    if (err || !remote || !remote.ts || !remote.data) return;
-    if (remote.ts > state.localTs) {
-      state.localTs = remote.ts;
-      state.data = remote.data;
-      saveLocal(remote.data, remote.ts);
-      updateGlobalKPIs();
-      if (state.activeView === 'year') renderYear();
-      if (state.activeView === 'summary') renderSummary();
-      setSyncUI('ok', 'تحديث من جهاز آخر ✓');
-      setTimeout(function(){ setSyncUI('idle', 'متزامن'); }, 3000);
-    }
+    if (err) return;
+    applyRemoteSnapshot(remote, 'تحديث من جهاز آخر ✓');
   });
+}
+
+function startRealtimeSync() {
+  if (HAS_FIREBASE_SDK && firebaseNodeRef) {
+    onValue(firebaseNodeRef, function(snapshot) {
+      applyRemoteSnapshot(snapshot.val(), 'تحديث لحظي من Firebase ✓');
+    }, function(error) {
+      console.error('Realtime listener error:', error);
+    });
+    return;
+  }
+
+  setInterval(pollFirebase, 8000);
 }
 
 (function boot() {
@@ -1143,7 +1226,7 @@ function pollFirebase() {
   updateGlobalKPIs();
   showView('year');
 
-  setSyncUI('saving', 'جاري الاتصال بـ Firebase…');
+  setSyncUI('saving', HAS_FIREBASE_SDK ? 'جاري الاتصال بـ Firebase SDK…' : 'جاري الاتصال بـ Firebase…');
   fbLoad(function(err, remote) {
     if (err) {
       setSyncUI('error', 'لا يوجد اتصال — يعمل محلياً');
@@ -1174,7 +1257,7 @@ function pollFirebase() {
     setTimeout(function(){ setSyncUI('idle', 'متزامن'); }, 3000);
   });
 
-  setInterval(pollFirebase, 8000);
+  startRealtimeSync();
 })();
 </script>
 
