@@ -3,1263 +3,858 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>نظام إيرادات أرسيل</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600;700;900&display=swap"
-    rel="stylesheet"
-  />
+  <title>لوحة إيرادات أرسيل — دقيقة</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Noto Kufi Arabic', Tahoma, sans-serif;
+    :root{
+      --bg:#07050f;
+      --bg2:#110d1c;
+      --panel:rgba(255,255,255,.07);
+      --panel2:rgba(255,255,255,.05);
+      --line:rgba(255,255,255,.10);
+      --text:#f5f7ff;
+      --muted:rgba(255,255,255,.62);
+      --green:#35d39a;
+      --red:#f87171;
+      --yellow:#fbbf24;
+      --primary:#7c5cff;
+      --primary2:#46b3ff;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{min-height:100%}
+    body{
+      font-family:'Noto Kufi Arabic',Tahoma,sans-serif;
       background:
-        radial-gradient(circle at top right, rgba(129,140,248,.12), transparent 35%),
-        radial-gradient(circle at bottom left, rgba(168,85,247,.12), transparent 35%),
-        #07050f;
-      color: #fff;
-      direction: rtl;
-      min-height: 100vh;
-      overflow-x: hidden;
+        radial-gradient(circle at 10% 10%, rgba(124,92,255,.15), transparent 30%),
+        radial-gradient(circle at 90% 15%, rgba(70,179,255,.14), transparent 30%),
+        radial-gradient(circle at 20% 90%, rgba(255,109,199,.11), transparent 28%),
+        linear-gradient(180deg,#05030a 0%, #090611 100%);
+      color:var(--text);
+      overflow-x:hidden;
     }
+    .orb{position:fixed;inset:auto;pointer-events:none;z-index:0;border-radius:50%;filter:blur(70px);opacity:.8}
+    .orb.a{width:340px;height:340px;top:-80px;right:-80px;background:rgba(124,92,255,.18)}
+    .orb.b{width:280px;height:280px;bottom:-60px;left:-50px;background:rgba(70,179,255,.13)}
+    .app{position:relative;z-index:1;max-width:1500px;margin:0 auto;padding:18px}
+    .glass{
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+      border:1px solid var(--line);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      border-radius:22px;
+      box-shadow:0 10px 35px rgba(0,0,0,.22);
+    }
+    .header{
+      display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+      padding:22px 24px;margin-bottom:18px;
+    }
+    .title h1{font-size:28px;font-weight:900;line-height:1.2}
+    .title p{color:var(--muted);font-size:12px;margin-top:6px}
+    .header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .status{
+      display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;
+      background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:12px
+    }
+    .status-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.35);box-shadow:0 0 10px rgba(255,255,255,.08)}
+    .status.ok .status-dot{background:var(--green);box-shadow:0 0 10px rgba(53,211,154,.7)}
+    .status.saving .status-dot{background:var(--yellow);box-shadow:0 0 10px rgba(251,191,36,.65)}
+    .status.error .status-dot{background:var(--red);box-shadow:0 0 10px rgba(248,113,113,.65)}
+    .btn{
+      border:none;cursor:pointer;color:#fff;padding:12px 18px;border-radius:14px;
+      font-family:inherit;font-size:13px;font-weight:800;
+      background:linear-gradient(135deg,rgba(124,92,255,.95),rgba(70,179,255,.95));
+      box-shadow:0 8px 22px rgba(70,179,255,.17);
+      transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+    .btn:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(124,92,255,.28)}
+    .btn.secondary{background:linear-gradient(135deg,#1f2937,#111827);border:1px solid rgba(255,255,255,.08)}
+    .btn.green{background:linear-gradient(135deg,#0ea56e,#10b981)}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+    .tab{padding:10px 16px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:#fff;font-weight:800;cursor:pointer}
+    .tab.active{background:linear-gradient(135deg,rgba(124,92,255,.9),rgba(70,179,255,.85));border-color:transparent}
+    .view{display:none}
+    .view.active{display:block}
+    .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:18px}
+    .kpi{padding:18px;border-radius:20px;position:relative;overflow:hidden}
+    .kpi .label{color:var(--muted);font-size:12px;margin-bottom:8px}
+    .kpi .value{font-size:24px;font-weight:900;letter-spacing:.2px;line-height:1.35}
+    .kpi::after{content:"";position:absolute;inset:auto -30px -30px auto;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.06)}
+    .grid-2{display:grid;grid-template-columns:1.2fr .95fr;gap:18px;align-items:start}
+    .section{padding:20px;margin-bottom:18px}
+    .section h2{font-size:16px;font-weight:900;margin-bottom:14px}
+    .section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: rgba(255,255,255,.04); }
-    ::-webkit-scrollbar-thumb { background: rgba(139,92,246,.5); border-radius: 4px; }
+    .years-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+    .year-card{padding:18px;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.04));border:1px solid var(--line);min-width:0}
+    .year-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+    .rank{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:14px;font-weight:900;color:#fff;background:linear-gradient(135deg,#8f7bff,#4db4ff);flex-shrink:0}
+    .year-title{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+    .year-title .year{font-size:18px;font-weight:900}
+    .year-title .hint{font-size:11px;color:var(--muted)}
+    .year-mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+    .mini{padding:12px 10px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);min-width:0}
+    .mini .m-label{font-size:11px;color:var(--muted);margin-bottom:6px}
+    .mini .m-value{font-size:16px;font-weight:900;line-height:1.5;word-break:break-word}
+    .year-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .year-actions .btn{flex:1}
 
-    @keyframes orb1 {
-      0%,100% { transform: translate(0,0) scale(1); }
-      50% { transform: translate(40px,-50px) scale(1.15); }
-    }
-    @keyframes orb2 {
-      0%,100% { transform: translate(0,0) scale(1.1); }
-      50% { transform: translate(-30px,40px) scale(0.85); }
-    }
-    .orb {
-      position: fixed;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .orb1 {
-      width: 600px;
-      height: 600px;
-      top: -15%;
-      right: -8%;
-      background: radial-gradient(circle, rgba(99,102,241,.22) 0%, transparent 70%);
-      animation: orb1 9s ease-in-out infinite;
-    }
-    .orb2 {
-      width: 500px;
-      height: 500px;
-      bottom: -20%;
-      left: -10%;
-      background: radial-gradient(circle, rgba(139,92,246,.18) 0%, transparent 70%);
-      animation: orb2 11s ease-in-out infinite;
-    }
+    .chart-shell{padding:18px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .bars{display:flex;align-items:flex-end;gap:10px;height:280px;padding:18px 4px 0;overflow-x:auto}
+    .bar-col{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:58px}
+    .bar-track{height:220px;width:42px;border-radius:18px;background:rgba(255,255,255,.05);display:flex;align-items:flex-end;padding:4px;position:relative;overflow:hidden}
+    .bar-fill{width:100%;border-radius:14px;background:linear-gradient(180deg,#4db4ff,#8f7bff)}
+    .bar-label{font-size:11px;color:var(--muted)}
+    .bar-value{font-size:10px;color:#dfe7ff;text-align:center;line-height:1.35}
 
-    .glass {
-      background: rgba(255,255,255,.07);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 16px;
+    .table-wrap{overflow:auto}
+    table{width:100%;border-collapse:collapse;min-width:860px}
+    th,td{padding:11px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,.07)}
+    th{font-size:11px;color:var(--muted);font-weight:800;background:rgba(255,255,255,.03);position:sticky;top:0}
+    td{font-size:13px}
+    tr:hover td{background:rgba(255,255,255,.03)}
+    .num{font-variant-numeric:tabular-nums;direction:ltr;display:inline-block}
+    .muted{color:var(--muted)}
+    .good{color:var(--green);font-weight:800}
+    .bad{color:var(--red);font-weight:800}
+    .pill{display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:999px;background:rgba(124,92,255,.14);border:1px solid rgba(124,92,255,.25);font-size:11px;font-weight:800}
+    .inp, select{
+      width:100%;padding:11px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.1);
+      background:rgba(255,255,255,.06);color:#fff;font-family:inherit;font-size:13px;outline:none
     }
+    .inp::placeholder{color:rgba(255,255,255,.34)}
+    select option{color:#111}
+    .form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:8px}
+    .field.wide{grid-column:span 2}
+    .field.full{grid-column:1/-1}
+    .quick-note{font-size:11px;color:var(--muted);margin-top:10px}
+    .action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 
-    #app {
-      position: relative;
-      z-index: 1;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 18px;
-    }
+    .summary-split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .list-col{display:flex;flex-direction:column;gap:12px}
+    .metric-list{display:flex;flex-direction:column;gap:10px}
+    .metric-item{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07)}
+    .progress{height:8px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:8px}
+    .progress > span{display:block;height:100%;background:linear-gradient(90deg,#4db4ff,#8f7bff)}
 
-    #header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      padding: 22px 28px;
-      margin-bottom: 18px;
-    }
-    #header h1 {
-      font-size: 24px;
-      font-weight: 900;
-      background: linear-gradient(90deg,#fff 0%,#a5b4fc 50%,#fff 100%);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: shimmer 3s linear infinite;
-    }
-    @keyframes shimmer {
-      0% { background-position: -200% center; }
-      100% { background-position: 200% center; }
-    }
-    #header p {
-      color: rgba(255,255,255,.45);
-      font-size: 12px;
-      margin-top: 4px;
-    }
+    .footer-space{height:8px}
 
-    #sync-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      padding: 5px 12px;
-      border-radius: 20px;
-      background: rgba(255,255,255,.07);
-      border: 1px solid rgba(255,255,255,.1);
-      transition: all .3s;
+    @media (max-width:1200px){
+      .grid-2,.summary-split{grid-template-columns:1fr}
     }
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      display: inline-block;
-      flex-shrink: 0;
+    @media (max-width:900px){
+      .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
-    .dot-idle { background: rgba(255,255,255,.3); }
-    .dot-saving { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; animation: blink .8s infinite; }
-    .dot-ok { background: #34d399; box-shadow: 0 0 8px #34d399; }
-    .dot-error { background: #f87171; box-shadow: 0 0 8px #f87171; }
-    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
-
-    #btn-print {
-      background: linear-gradient(135deg, #10b981, #059669);
-      border: none;
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 700;
-      transition: transform .2s, box-shadow .2s;
-      box-shadow: 0 4px 14px rgba(16,185,129,.3);
-    }
-    #btn-print:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16,185,129,.5); }
-
-    #kpi-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-    .kpi-card {
-      padding: 18px;
-      border-radius: 14px;
-      border-top: 3px solid;
-    }
-    .kpi-card .icon { font-size: 24px; margin-bottom: 8px; }
-    .kpi-card .label { color: rgba(255,255,255,.45); font-size: 11px; margin-bottom: 4px; }
-    .kpi-card .value { font-size: 16px; font-weight: 700; }
-
-    #tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-bottom: 18px;
-    }
-    .tab {
-      padding: 8px 16px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 12px;
-      font-weight: 700;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.07);
-      color: #fff;
-      transition: all .18s;
-      white-space: nowrap;
-    }
-    .tab:hover { background: rgba(255,255,255,.14); }
-    .tab.active {
-      background: linear-gradient(135deg, rgba(99,102,241,.65), rgba(139,92,246,.65));
-      border-color: rgba(139,92,246,.5);
-      box-shadow: 0 4px 16px rgba(99,102,241,.3);
-    }
-
-    #panel-year, #panel-summary { display: none; }
-    #panel-year.visible, #panel-summary.visible { display: block; }
-
-    .section {
-      padding: 22px;
-      margin-bottom: 18px;
-    }
-    .section h2 {
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 16px;
-      color: rgba(255,255,255,.9);
-    }
-
-    #rate-row {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-      padding: 14px 20px;
-      margin-bottom: 18px;
-      border-radius: 12px;
-    }
-    #rate-row label { font-size: 13px; font-weight: 700; color: rgba(255,255,255,.8); }
-    #rate-row .rate-value { color: #34d399; font-weight: 700; font-size: 13px; }
-
-    .inp {
-      background: rgba(255,255,255,.09);
-      border: 1px solid rgba(255,255,255,.15);
-      color: #fff;
-      border-radius: 8px;
-      padding: 5px 8px;
-      font-family: inherit;
-      font-size: 12px;
-      text-align: center;
-      direction: rtl;
-      outline: none;
-      width: 100%;
-      -webkit-appearance: none;
-      transition: border-color .18s, background .18s;
-    }
-    .inp:focus {
-      border-color: rgba(129,140,248,.7);
-      background: rgba(99,102,241,.12);
-    }
-    .inp::placeholder { color: rgba(255,255,255,.25); }
-    .inp[type=number]::-webkit-inner-spin-button,
-    .inp[type=number]::-webkit-outer-spin-button { opacity: .3; }
-
-    .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      direction: rtl;
-      min-width: 720px;
-    }
-    thead th {
-      padding: 10px 10px;
-      color: rgba(255,255,255,.5);
-      font-size: 11px;
-      font-weight: 700;
-      text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,.1);
-      white-space: nowrap;
-    }
-    tbody td {
-      padding: 8px 10px;
-      text-align: center;
-      font-size: 12px;
-      border-bottom: 1px solid rgba(255,255,255,.05);
-    }
-    tbody tr:hover td { background: rgba(99,102,241,.07); }
-    tfoot td {
-      padding: 11px 10px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 700;
-      border-top: 2px solid rgba(99,102,241,.4);
-      background: rgba(99,102,241,.1);
-    }
-
-    .bar-wrap {
-      height: 3px;
-      background: rgba(255,255,255,.07);
-      border-radius: 2px;
-      margin-top: 4px;
-      overflow: hidden;
-    }
-    .bar-fill {
-      height: 100%;
-      border-radius: 2px;
-      background: linear-gradient(90deg, #818cf8, #6366f1);
-      transition: width .4s;
-    }
-
-    .pill {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .chart-area {
-      width: 100%;
-      height: 220px;
-      position: relative;
-      overflow: hidden;
-    }
-    canvas { display: block; }
-
-    .yr-badge {
-      display: inline-block;
-      padding: 3px 12px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .chart-toggle { display: flex; gap: 6px; }
-    .ctbtn {
-      padding: 5px 12px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.07);
-      color: #fff;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 11px;
-      font-weight: 700;
-      transition: all .15s;
-    }
-    .ctbtn.active {
-      background: rgba(99,102,241,.5);
-      border-color: rgba(139,92,246,.5);
-    }
-
-    .sec-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    .sec-head h2 { margin-bottom: 0; }
-
-    @media (max-width: 600px) {
-      #app { padding: 10px; }
-      #header { padding: 16px; }
-      #header h1 { font-size: 18px; }
+    @media (max-width:640px){
+      .app{padding:12px}
+      .header{padding:18px}
+      .title h1{font-size:22px}
+      .year-mini{grid-template-columns:1fr}
+      .form-grid{grid-template-columns:1fr}
+      .field.wide{grid-column:span 1}
+      .btn{width:100%}
+      .header-actions{width:100%}
+      .header-actions > *{width:100%}
     }
   </style>
 </head>
 <body>
-
-<div class="orb orb1"></div>
-<div class="orb orb2"></div>
-
-<div id="app">
-  <div class="glass" id="header">
-    <div>
-      <h1>📊 نظام إيرادات أرسيل</h1>
-      <p>تقرير شامل ٢٠١٩ – ٢٠٢٦ · ل.س / دولار</p>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-      <div id="sync-badge">
-        <span class="dot dot-idle" id="sync-dot"></span>
-        <span id="sync-text">جاري التهيئة…</span>
+  <div class="orb a"></div>
+  <div class="orb b"></div>
+  <div class="app">
+    <div class="glass header">
+      <div class="title">
+        <h1>📊 لوحة إيرادات أرسيل الدقيقة</h1>
+        <p>تزامن مباشر · أرقام كاملة بالإنجليزي · تقرير PDF داكن ومرتب</p>
       </div>
-      <button id="btn-print">📄 تصدير PDF</button>
-    </div>
-  </div>
-
-  <div id="kpi-row">
-    <div class="glass kpi-card" style="border-top-color:#818cf8">
-      <div class="icon">💰</div>
-      <div class="label">إجمالي الإيرادات الكلي</div>
-      <div class="value" id="kpi-total-syp">—</div>
-    </div>
-    <div class="glass kpi-card" style="border-top-color:#34d399">
-      <div class="icon">💵</div>
-      <div class="label">بالدولار (تقديري)</div>
-      <div class="value" id="kpi-total-usd">—</div>
-    </div>
-    <div class="glass kpi-card" style="border-top-color:#f472b6">
-      <div class="icon">🏆</div>
-      <div class="label">أعلى سنة إيراداً</div>
-      <div class="value">٢٠٢٥</div>
-    </div>
-    <div class="glass kpi-card" style="border-top-color:#fb923c">
-      <div class="icon">📈</div>
-      <div class="label">نمو 2019 → 2025</div>
-      <div class="value">+67,565%</div>
-    </div>
-  </div>
-
-  <div id="tabs">
-    <button class="tab" data-view="summary">📋 التقرير الشامل</button>
-  </div>
-
-  <div id="panel-year">
-    <div id="year-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px;"></div>
-
-    <div class="glass" id="rate-row">
-      <label>💱 سعر الصرف (ل.س/دولار) للسنة المختارة:</label>
-      <input type="number" id="inp-rate" class="inp" style="width:130px;" placeholder="سعر الصرف" />
-      <span class="rate-value" id="rate-usd-total">—</span>
-    </div>
-
-    <div class="glass section">
-      <h2 id="year-chart-title">📊 الإيرادات الشهرية</h2>
-      <div class="chart-area">
-        <canvas id="canvas-year"></canvas>
+      <div class="header-actions">
+        <div class="status" id="sync-status"><span class="status-dot"></span><span id="sync-text">جاري التهيئة...</span></div>
+        <button class="btn green" id="btn-pdf-all">PDF التقرير الشامل</button>
+        <button class="btn secondary" id="btn-pdf-year">PDF السنة الحالية</button>
       </div>
     </div>
 
-    <div class="glass section">
-      <h2 id="year-table-title">📋 جدول الإيرادات الشهرية</h2>
-      <div class="tbl-wrap">
-        <table id="tbl-year">
-          <thead>
-            <tr>
-              <th>الشهر</th>
-              <th>الإيراد (ل.س)</th>
-              <th>السعر الوسط (ل.س)</th>
-              <th>عدد المشتركين</th>
-              <th>المعادل بالدولار</th>
-              <th>التراكمي</th>
-              <th>نسبة الشهر</th>
-            </tr>
-          </thead>
-          <tbody id="tbl-year-body"></tbody>
-          <tfoot id="tbl-year-foot"></tfoot>
-        </table>
-      </div>
+    <div class="tabs">
+      <button class="tab active" data-view="dashboard">لوحة التحكم</button>
+      <button class="tab" data-view="year">تفاصيل سنة</button>
+      <button class="tab" data-view="summary">التقرير الشامل</button>
+      <button class="tab" data-view="quick">إضافة سريعة</button>
     </div>
-  </div>
 
-  <div id="panel-summary">
-    <div id="sum-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:18px;"></div>
+    <section class="view active" id="view-dashboard">
+      <div class="kpis" id="top-kpis"></div>
 
-    <div class="glass section">
-      <div class="sec-head">
-        <h2>📈 تطور الإيرادات السنوية 2019–2026</h2>
-        <div class="chart-toggle">
-          <button class="ctbtn active" id="ctbtn-bar" onclick="setSumChart('bar')">أعمدة</button>
-          <button class="ctbtn" id="ctbtn-line" onclick="setSumChart('line')">خط</button>
+      <div class="grid-2">
+        <div class="glass section">
+          <div class="section-head">
+            <h2>🗂️ السنوات بنظرة واحدة</h2>
+            <div class="muted" style="font-size:12px">بدون تداخل · أرقام كاملة · فتح سريع للسنة</div>
+          </div>
+          <div class="years-grid" id="years-grid"></div>
+        </div>
+
+        <div>
+          <div class="glass section">
+            <div class="section-head">
+              <h2>📌 ملخص سريع</h2>
+              <span class="pill" id="best-year-pill">—</span>
+            </div>
+            <div class="metric-list" id="quick-list"></div>
+          </div>
+
+          <div class="glass section">
+            <div class="section-head">
+              <h2>➕ إضافة شهر بسرعة</h2>
+              <span class="muted" style="font-size:12px">من نفس التطبيق مباشرة</span>
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label>السنة</label>
+                <select id="quick-year"></select>
+              </div>
+              <div class="field">
+                <label>الشهر</label>
+                <select id="quick-month"></select>
+              </div>
+              <div class="field">
+                <label>الإيراد (SYP)</label>
+                <input class="inp" type="number" id="quick-rev" placeholder="0">
+              </div>
+              <div class="field">
+                <label>السعر الوسط</label>
+                <input class="inp" type="number" id="quick-price" placeholder="0">
+              </div>
+              <div class="field wide">
+                <label>سعر الصرف للسنة</label>
+                <input class="inp" type="number" id="quick-rate" placeholder="0">
+              </div>
+              <div class="field wide">
+                <label>ملاحظتك</label>
+                <input class="inp" type="text" id="quick-note" placeholder="اختياري">
+              </div>
+            </div>
+            <div class="action-row">
+              <button class="btn" id="btn-quick-save">حفظ الشهر الآن</button>
+            </div>
+            <div class="quick-note" id="quick-save-text">أي تعديل هنا يُحفظ محليًا ويُرفع إلى Firebase.</div>
+          </div>
         </div>
       </div>
-      <div class="chart-area" style="height:260px;">
-        <canvas id="canvas-summary"></canvas>
-      </div>
-    </div>
+    </section>
 
-    <div class="glass section">
-      <h2>📊 جدول مقارنة سنوي شامل</h2>
-      <div class="tbl-wrap">
-        <table id="tbl-summary">
-          <thead>
-            <tr>
-              <th>السنة</th>
-              <th>الإيراد (ل.س)</th>
-              <th>بالدولار</th>
-              <th>نمو عن السابق</th>
-              <th>نسبة من الإجمالي</th>
-              <th>سعر الصرف</th>
-            </tr>
-          </thead>
-          <tbody id="tbl-summary-body"></tbody>
-          <tfoot id="tbl-summary-foot"></tfoot>
-        </table>
-      </div>
-    </div>
+    <section class="view" id="view-year">
+      <div class="kpis" id="year-kpis"></div>
 
-    <div class="glass section">
-      <h2>📅 مقارنة شهرية بين السنوات</h2>
-      <div class="chart-area" style="height:260px;">
-        <canvas id="canvas-monthly"></canvas>
+      <div class="glass section">
+        <div class="section-head">
+          <h2 id="year-heading">📅 تفاصيل سنة</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <select id="year-selector" style="min-width:140px"></select>
+            <button class="btn secondary" id="btn-open-dashboard">رجوع للوحة</button>
+          </div>
+        </div>
+        <div class="chart-shell">
+          <div class="bars" id="year-bars"></div>
+        </div>
       </div>
-    </div>
+
+      <div class="glass section">
+        <div class="section-head">
+          <h2>🧾 جدول الأشهر</h2>
+          <div class="muted" id="year-rate-text">—</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>الشهر</th>
+                <th>الإيراد</th>
+                <th>السعر الوسط</th>
+                <th>عدد المشتركين</th>
+                <th>بالدولار</th>
+                <th>التراكمي</th>
+                <th>نسبة الشهر</th>
+              </tr>
+            </thead>
+            <tbody id="year-table-body"></tbody>
+            <tfoot id="year-table-foot"></tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-summary">
+      <div class="summary-split">
+        <div class="glass section">
+          <h2>📈 تطور الإيرادات السنوية</h2>
+          <div class="chart-shell">
+            <div class="bars" id="summary-bars"></div>
+          </div>
+        </div>
+        <div class="glass section">
+          <h2>📊 مقارنة سريعة</h2>
+          <div class="metric-list" id="summary-side-list"></div>
+        </div>
+      </div>
+
+      <div class="glass section">
+        <div class="section-head">
+          <h2>📋 جدول مقارنة سنوي شامل</h2>
+          <div class="muted">كل الأرقام كاملة وبدون اختصار</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>السنة</th>
+                <th>الإيراد (SYP)</th>
+                <th>بالدولار</th>
+                <th>النمو</th>
+                <th>أفضل شهر</th>
+                <th>سعر الصرف</th>
+                <th>الحصة من الإجمالي</th>
+              </tr>
+            </thead>
+            <tbody id="summary-table-body"></tbody>
+            <tfoot id="summary-table-foot"></tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-quick">
+      <div class="glass section">
+        <div class="section-head">
+          <h2>🛠️ إضافة أو تعديل شهر بدقة</h2>
+          <div class="muted">هذا القسم يعدّل نفس البيانات الموجودة في اللوحة</div>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label>السنة</label>
+            <select id="edit-year"></select>
+          </div>
+          <div class="field">
+            <label>الشهر</label>
+            <select id="edit-month"></select>
+          </div>
+          <div class="field">
+            <label>الإيراد (SYP)</label>
+            <input class="inp" type="number" id="edit-rev" placeholder="0">
+          </div>
+          <div class="field">
+            <label>السعر الوسط</label>
+            <input class="inp" type="number" id="edit-price" placeholder="0">
+          </div>
+          <div class="field wide">
+            <label>سعر الصرف للسنة</label>
+            <input class="inp" type="number" id="edit-rate" placeholder="0">
+          </div>
+          <div class="field wide">
+            <label>مراجعة قبل الحفظ</label>
+            <input class="inp" type="text" id="edit-preview" readonly>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn" id="btn-edit-save">حفظ التعديل</button>
+          <button class="btn secondary" id="btn-load-current">تحميل القيم الحالية</button>
+        </div>
+        <div class="quick-note" id="edit-status-text">اختر سنة وشهرًا ثم حمّل القيم الحالية أو عدّلها مباشرة.</div>
+      </div>
+    </section>
+
+    <div class="footer-space"></div>
   </div>
-</div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
-
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyA1SUY7jsBxvk73So-NIFncxMs5xyTf5gM",
-  authDomain: "imad222.firebaseapp.com",
-  databaseURL: "https://imad222-default-rtdb.firebaseio.com",
-  projectId: "imad222",
-  storageBucket: "imad222.firebasestorage.app",
-  messagingSenderId: "916772184467",
-  appId: "1:916772184467:web:5679a426e5bdbc82638866",
-  measurementId: "G-4P65YVN10S"
-};
-
-const FIREBASE_REST_FALLBACK_URL = "https://imad222-default-rtdb.firebaseio.com/arsil-revenue.json";
-const FIREBASE_NODE_PATH = "arsil-revenue";
-const LS_KEY  = "arsil_v3";
-
-let firebaseApp = null;
-let firebaseDb = null;
-let firebaseNodeRef = null;
-
-function firebaseIsConfigured() {
-  return !!(
-    FIREBASE_CONFIG.apiKey &&
-    FIREBASE_CONFIG.authDomain &&
-    FIREBASE_CONFIG.databaseURL &&
-    FIREBASE_CONFIG.projectId &&
-    FIREBASE_CONFIG.storageBucket &&
-    FIREBASE_CONFIG.messagingSenderId &&
-    FIREBASE_CONFIG.appId &&
-    !String(FIREBASE_CONFIG.apiKey).includes("ضع_")
-  );
-}
-
-function initFirebase() {
-  if (!firebaseIsConfigured()) return false;
-  try {
-    firebaseApp = initializeApp(FIREBASE_CONFIG);
-    firebaseDb = getDatabase(firebaseApp);
-    firebaseNodeRef = ref(firebaseDb, FIREBASE_NODE_PATH);
-    return true;
-  } catch (err) {
-    console.error("Firebase init error:", err);
-    return false;
-  }
-}
-
-const HAS_FIREBASE_SDK = initFirebase();
-var MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-var YEARS  = [2019,2020,2021,2022,2023,2024,2025,2026];
-var COLORS = ['#818cf8','#a78bfa','#f472b6','#fb923c','#34d399','#60a5fa','#facc15','#2dd4bf'];
-
-var RAW = {
-  2019:[38084250,19983950,23198650,27622625,31045125,34842500,37218975,50843500,66747425,93943275,97494325,112823775],
-  2020:[136574000,123351500,187721550,169699150,228606200,144836000,280911950,341039500,385253000,315779250,393821500,533089250],
-  2021:[491820000,448707000,562156250,697661250,868148000,1022269250,1209652250,1468962250,1400745000,1721277750,1874772750,2010222750],
-  2022:[1899684500,2006812500,2334037000,2636149750,2595706500,3064715750,2972538000,3290905500,3191360500,3577532000,5520020000,4790398500],
-  2023:[5224877400,5208180000,5249960000,5403075000,5599065000,5796375000,6478005000,7766880000,8108445000,11272210000,17876090000,19332400000],
-  2024:[19945919950,19462057450,22003915000,23043125000,23654500000,23683425000,24866700000,25493505000,26770900000,28702650000,28651310000,26920065000],
-  2025:[26885925000,26180900000,33252025000,34014650000,33027850000,33587125000,36379575000,38866625000,39999025000,42055550000,41039050000,43781075000],
-  2026:[39529425000,30917575000,0,0,0,0,0,0,0,0,0,0]
-};
-var DEF_RATES = {2019:700,2020:1500,2021:3500,2022:4500,2023:7000,2024:12000,2025:13500,2026:14000};
-
-var state = {
-  activeView: 'year',
-  activeYear: 2025,
-  sumChartType: 'bar',
-  data: null,
-  localTs: 0,
-  saveTimer: null
-};
-
-function num(v){ return Number(v) || 0; }
-
-function fmtSYP(v) {
-  var x = num(v);
-  if (!x) return '—';
-  if (x >= 1e12) return (x/1e12).toFixed(3) + ' تريليون';
-  if (x >= 1e9)  return (x/1e9).toFixed(3)  + ' مليار';
-  if (x >= 1e6)  return (x/1e6).toFixed(2)  + ' مليون';
-  return x.toLocaleString('ar-SY');
-}
-
-function fmtUSD(v) {
-  var x = num(v);
-  if (!x) return '—';
-  if (x >= 1e9) return '$' + (x/1e9).toFixed(3) + 'B';
-  if (x >= 1e6) return '$' + (x/1e6).toFixed(3) + 'M';
-  if (x >= 1e3) return '$' + (x/1e3).toFixed(1) + 'K';
-  return '$' + x.toFixed(0);
-}
-
-function fmtShort(v) {
-  var x = num(v);
-  if (!x) return '0';
-  if (x >= 1e9) return (x/1e9).toFixed(1) + ' مل';
-  if (x >= 1e6) return (x/1e6).toFixed(0) + ' م';
-  return x.toLocaleString();
-}
-
-function pct(a, b) { return b ? ((a/b)*100).toFixed(1) + '%' : '—'; }
-
-function hexToRgba(hex, alpha) {
-  var h = String(hex || '').replace('#', '').trim();
-  if (h.length === 3) {
-    h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
-  }
-  if (!/^[0-9a-fA-F]{6}$/.test(h)) {
-    return 'rgba(129,140,248,' + alpha + ')';
-  }
-  var r = parseInt(h.slice(0, 2), 16);
-  var g = parseInt(h.slice(2, 4), 16);
-  var b = parseInt(h.slice(4, 6), 16);
-  return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
-}
-
-function buildDefaultData() {
-  var d = {};
-  YEARS.forEach(function(y) {
-    d[y] = {
-      rate: DEF_RATES[y],
-      months: RAW[y].map(function(r) { return { rev: r, price: 0 }; })
+  <script>
+    var FB_URL = 'https://imad222-default-rtdb.firebaseio.com/arsil-revenue.json';
+    var LS_KEY = 'arsil_precise_v1';
+    var MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    var YEARS = [2019,2020,2021,2022,2023,2024,2025,2026];
+    var RAW = {
+      2019:[38084250,19983950,23198650,27622625,31045125,34842500,37218975,50843500,66747425,93943275,97494325,112823775],
+      2020:[136574000,123351500,187721550,169699150,228606200,144836000,280911950,341039500,385253000,315779250,393821500,533089250],
+      2021:[491820000,448707000,562156250,697661250,868148000,1022269250,1209652250,1468962250,1400745000,1721277750,1874772750,2010222750],
+      2022:[1899684500,2006812500,2334037000,2636149750,2595706500,3064715750,2972538000,3290905500,3191360500,3577532000,5520020000,4790398500],
+      2023:[5224877400,5208180000,5249960000,5403075000,5599065000,5796375000,6478005000,7766880000,8108445000,11272210000,17876090000,19332400000],
+      2024:[19945919950,19462057450,22003915000,23043125000,23654500000,23683425000,24866700000,25493505000,26770900000,28702650000,28651310000,26920065000],
+      2025:[26885925000,26180900000,33252025000,34014650000,33027850000,33587125000,36379575000,38866625000,39999025000,42055550000,41039050000,43781075000],
+      2026:[39529425000,30917575000,0,0,0,0,0,0,0,0,0,0]
     };
-  });
-  return d;
-}
+    var DEF_RATES = {2019:700,2020:1500,2021:3500,2022:4500,2023:7000,2024:12000,2025:13500,2026:14000};
 
-function loadLocalData() {
-  try {
-    var raw = localStorage.getItem(LS_KEY);
-    if (!raw) return null;
-    var parsed = JSON.parse(raw);
-    if (parsed && parsed.data && parsed.ts) {
-      state.localTs = parsed.ts;
-      return parsed.data;
-    }
-  } catch(e) {}
-  return null;
-}
-
-function saveLocal(data, ts) {
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify({ ts: ts, data: data }));
-  } catch(e) {}
-}
-
-
-function fbSave(data, cb) {
-  var payloadObj = { ts: Date.now(), data: data };
-
-  if (HAS_FIREBASE_SDK && firebaseNodeRef) {
-    set(firebaseNodeRef, payloadObj)
-      .then(function() { cb(null); })
-      .catch(function(err) { cb(err); });
-    return;
-  }
-
-  var payload = JSON.stringify(payloadObj);
-  fetch(FIREBASE_REST_FALLBACK_URL, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: payload
-  })
-  .then(function(r) {
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
-  })
-  .then(function() { cb(null); })
-  .catch(function(e) { cb(e); });
-}
-
-function fbLoad(cb) {
-  if (HAS_FIREBASE_SDK && firebaseNodeRef) {
-    get(firebaseNodeRef)
-      .then(function(snapshot) { cb(null, snapshot.val()); })
-      .catch(function(err) { cb(err, null); });
-    return;
-  }
-
-  fetch(FIREBASE_REST_FALLBACK_URL)
-  .then(function(r) {
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
-  })
-  .then(function(d) { cb(null, d); })
-  .catch(function(e) { cb(e, null); });
-}
-
-function setSyncUI(status, text) {
-  var dot  = document.getElementById('sync-dot');
-  var span = document.getElementById('sync-text');
-  dot.className = 'dot';
-  switch(status) {
-    case 'saving': dot.classList.add('dot-saving'); break;
-    case 'ok':     dot.classList.add('dot-ok');     break;
-    case 'error':  dot.classList.add('dot-error');  break;
-    default:       dot.classList.add('dot-idle');
-  }
-  span.textContent = text;
-}
-
-function scheduleSave() {
-  var ts = Date.now();
-  saveLocal(state.data, ts);
-
-  clearTimeout(state.saveTimer);
-  state.saveTimer = setTimeout(function() {
-    setSyncUI('saving', 'جاري الحفظ…');
-    var ts2 = Date.now();
-    state.localTs = ts2;
-    saveLocal(state.data, ts2);
-    fbSave(state.data, function(err) {
-      if (err) {
-        setSyncUI('error', 'خطأ في الاتصال — محفوظ محلياً');
-      } else {
-        setSyncUI('ok', 'تم الحفظ ✓');
-        setTimeout(function(){ setSyncUI('idle', 'متزامن'); }, 3000);
-      }
-    });
-  }, 1500);
-}
-
-function yearTotal(y) {
-  return state.data[y].months.reduce(function(s,m){ return s + num(m.rev); }, 0);
-}
-function yearUSD(y) {
-  var tot = yearTotal(y);
-  var rate = num(state.data[y].rate);
-  return rate > 0 ? tot / rate : 0;
-}
-function grandTotal() {
-  return YEARS.reduce(function(s,y){ return s + yearTotal(y); }, 0);
-}
-function grandUSD() {
-  return YEARS.reduce(function(s,y){ return s + yearUSD(y); }, 0);
-}
-function yearGrowth(y) {
-  if (y <= 2019) return null;
-  var cur = yearTotal(y);
-  var prev = yearTotal(y - 1);
-  return prev > 0 ? ((cur - prev) / prev * 100) : null;
-}
-
-function clearCanvas(id) {
-  var canvas = document.getElementById(id);
-  if (!canvas) return null;
-  canvas.width = canvas.parentElement.clientWidth || 800;
-  canvas.height = canvas.parentElement.clientHeight || 220;
-  var ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  return ctx;
-}
-
-function drawBarChart(id, items, maxVal) {
-  var ctx = clearCanvas(id);
-  if (!ctx || !items.length) return;
-
-  var W = ctx.canvas.width, H = ctx.canvas.height;
-  var padL = 18, padR = 12, padT = 20, padB = 40;
-  var chartW = W - padL - padR;
-  var chartH = H - padT - padB;
-  var barW = Math.max(4, (chartW / items.length) * 0.6);
-  var gap = (chartW - barW * items.length) / (items.length + 1);
-  var topVal = maxVal || Math.max.apply(null, items.map(function(d){ return d.value; })) || 1;
-
-  ctx.strokeStyle = 'rgba(255,255,255,.07)';
-  ctx.lineWidth = 1;
-  for (var g = 0; g <= 4; g++) {
-    var gy = padT + (chartH / 4) * g;
-    ctx.beginPath();
-    ctx.moveTo(padL, gy);
-    ctx.lineTo(W - padR, gy);
-    ctx.stroke();
-
-    var yVal = topVal * (1 - g/4);
-    ctx.fillStyle = 'rgba(255,255,255,.35)';
-    ctx.font = '9px Tahoma';
-    ctx.textAlign = 'left';
-    ctx.fillText(fmtShort(yVal), 2, gy + 3);
-  }
-
-  items.forEach(function(item, i) {
-    var x = padL + gap + i * (barW + gap);
-    var bh = (num(item.value) / topVal) * chartH;
-    var y = padT + chartH - bh;
-
-    var grad = ctx.createLinearGradient(0, y, 0, padT + chartH);
-    grad.addColorStop(0, item.color || '#818cf8');
-    grad.addColorStop(1, 'rgba(0,0,0,.2)');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    if (ctx.roundRect) {
-      ctx.roundRect(x, y, barW, bh, [4,4,0,0]);
-    } else {
-      ctx.rect(x, y, barW, bh);
-    }
-    ctx.fill();
-
-    ctx.fillStyle = 'rgba(255,255,255,.6)';
-    ctx.font = '9px Noto Kufi Arabic,Tahoma';
-    ctx.textAlign = 'center';
-    ctx.fillText(item.label, x + barW/2, padT + chartH + 14);
-  });
-}
-
-function drawLineChart(id, series, xLabels) {
-  var ctx = clearCanvas(id);
-  if (!ctx || !series.length) return;
-
-  var W = ctx.canvas.width, H = ctx.canvas.height;
-  var padL = 18, padR = 12, padT = 20, padB = 40;
-  var chartW = W - padL - padR;
-  var chartH = H - padT - padB;
-
-  var allVals = [];
-  series.forEach(function(s){ s.values.forEach(function(v){ allVals.push(v); }); });
-  var topVal = Math.max.apply(null, allVals) || 1;
-  var n = xLabels.length;
-
-  ctx.strokeStyle = 'rgba(255,255,255,.07)';
-  ctx.lineWidth = 1;
-  for (var g = 0; g <= 4; g++) {
-    var gy = padT + (chartH/4)*g;
-    ctx.beginPath();
-    ctx.moveTo(padL, gy);
-    ctx.lineTo(W - padR, gy);
-    ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,.3)';
-    ctx.font = '9px Tahoma';
-    ctx.textAlign = 'left';
-    ctx.fillText(fmtShort(topVal*(1-g/4)), 2, gy+3);
-  }
-
-  xLabels.forEach(function(lbl, i) {
-    var x = padL + (i / (n - 1 || 1)) * chartW;
-    ctx.fillStyle = 'rgba(255,255,255,.5)';
-    ctx.font = '9px Noto Kufi Arabic,Tahoma';
-    ctx.textAlign = 'center';
-    ctx.fillText(lbl, x, H - padB + 14);
-  });
-
-  series.forEach(function(s) {
-    ctx.beginPath();
-    ctx.strokeStyle = s.color;
-    ctx.lineWidth = 2;
-
-    s.values.forEach(function(v, i) {
-      var x = padL + (i / (n - 1 || 1)) * chartW;
-      var y = padT + chartH - (v/topVal)*chartH;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-
-    ctx.stroke();
-    ctx.lineTo(padL + chartW, padT + chartH);
-    ctx.lineTo(padL, padT + chartH);
-    ctx.closePath();
-
-    var grad = ctx.createLinearGradient(0, padT, 0, padT + chartH);
-    grad.addColorStop(0, hexToRgba(s.color, 0.22));
-    grad.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = grad;
-    ctx.fill();
-  });
-}
-
-function renderYear() {
-  var y = state.activeYear;
-  var yd = state.data[y];
-  var rate = num(yd.rate);
-  var tot = yearTotal(y);
-  var usd = rate > 0 ? tot / rate : 0;
-  var gt = grandTotal();
-  var growth = yearGrowth(y);
-  var maxRev = Math.max.apply(null, yd.months.map(function(m){ return num(m.rev); })) || 1;
-
-  document.getElementById('year-chart-title').textContent = '📊 الإيرادات الشهرية — ' + y;
-  document.getElementById('year-table-title').textContent = '📋 جدول الإيرادات الشهرية — ' + y;
-  document.getElementById('rate-usd-total').textContent = 'الإجمالي: ' + fmtUSD(usd);
-  document.getElementById('inp-rate').value = rate || '';
-
-  var growthCard = growth !== null
-    ? { icon: growth >= 0 ? '📈' : '📉', label:'نمو عن العام السابق', val:(growth>=0?'+':'')+growth.toFixed(1)+'%', color: growth>=0?'#34d399':'#f87171' }
-    : { icon:'🗓️', label:'أول سنة مرصودة', val:'٢٠١٩', color:'#a78bfa' };
-
-  var miniCards = [
-    { icon:'💰', label:'إجمالي ' + y, val: fmtSYP(tot), color:'#818cf8' },
-    { icon:'💵', label:'بالدولار', val: fmtUSD(usd), color:'#34d399' },
-    { icon:'📊', label:'متوسط شهري', val: fmtSYP(tot/12), color:'#fb923c' },
-    growthCard,
-    { icon:'🎯', label:'نسبة من الإجمالي', val: pct(tot, gt), color:'#f472b6' }
-  ];
-
-  var kpiEl = document.getElementById('year-kpis');
-  kpiEl.innerHTML = miniCards.map(function(c) {
-    return '<div class="glass kpi-card" style="border-top-color:' + c.color + '">'
-      + '<div class="icon">' + c.icon + '</div>'
-      + '<div class="label">' + c.label + '</div>'
-      + '<div class="value" style="color:' + c.color + '">' + c.val + '</div>'
-      + '</div>';
-  }).join('');
-
-  var barItems = yd.months.map(function(m, i) {
-    return { label: MONTHS[i].slice(0,3), value: num(m.rev), color: '#818cf8' };
-  });
-  setTimeout(function(){ drawBarChart('canvas-year', barItems, maxRev); }, 50);
-
-  var cum = 0;
-  var bodyHTML = yd.months.map(function(m, i) {
-    cum += num(m.rev);
-    var rev = num(m.rev);
-    var price = num(m.price);
-    var usdM = rate > 0 ? rev / rate : 0;
-    var subs = price > 0 ? Math.round(rev / price) : null;
-    var share = tot > 0 ? (rev / tot * 100) : 0;
-    var bar = maxRev > 0 ? Math.round((rev / maxRev) * 100) : 0;
-
-    return '<tr>'
-      + '<td style="font-weight:700;color:rgba(255,255,255,.85)">' + MONTHS[i] + '</td>'
-      + '<td>'
-      +   '<input type="number" class="inp" data-year="' + y + '" data-mi="' + i + '" data-field="rev" value="' + (rev || '') + '" placeholder="0" />'
-      +   (rev > 0 ? '<div class="bar-wrap"><div class="bar-fill" style="width:' + bar + '%"></div></div>' : '')
-      + '</td>'
-      + '<td><input type="number" class="inp" data-year="' + y + '" data-mi="' + i + '" data-field="price" value="' + (price || '') + '" placeholder="السعر" /></td>'
-      + '<td style="color:' + (subs ? '#a5b4fc' : 'rgba(255,255,255,.3)') + ';">' + (subs ? subs.toLocaleString('ar-SY') : '—') + '</td>'
-      + '<td style="color:#34d399;">' + fmtUSD(usdM) + '</td>'
-      + '<td style="color:rgba(255,255,255,.6);font-size:11px;">' + fmtSYP(cum) + '</td>'
-      + '<td><span class="pill" style="background:rgba(99,102,241,' + Math.max(.1, share/100) + ');border:1px solid rgba(129,140,248,.3)">' + share.toFixed(1) + '%</span></td>'
-      + '</tr>';
-  }).join('');
-
-  document.getElementById('tbl-year-body').innerHTML = bodyHTML;
-  document.getElementById('tbl-year-foot').innerHTML =
-    '<tr>'
-    + '<td>الإجمالي</td>'
-    + '<td colspan="2" style="color:#a5b4fc;">' + fmtSYP(tot) + '</td>'
-    + '<td style="color:rgba(255,255,255,.35);">—</td>'
-    + '<td style="color:#34d399;">' + fmtUSD(usd) + '</td>'
-    + '<td style="color:#a5b4fc;">' + fmtSYP(tot) + '</td>'
-    + '<td>100%</td>'
-    + '</tr>';
-}
-
-function renderSummary() {
-  var gt = grandTotal();
-  var gusd = grandUSD();
-
-  var bestY = YEARS[0], bestTot = 0;
-  YEARS.forEach(function(y) {
-    var t = yearTotal(y);
-    if (t > bestTot) {
-      bestTot = t;
-      bestY = y;
-    }
-  });
-
-  var sumCards = [
-    { icon:'🏦', label:'إجمالي كل السنوات (ل.س)', val:fmtSYP(gt), color:'#818cf8' },
-    { icon:'💵', label:'إجمالي كل السنوات ($)', val:fmtUSD(gusd), color:'#34d399' },
-    { icon:'🏆', label:'أعلى سنة إيراداً', val:bestY + ' — ' + fmtSYP(bestTot), color:'#fbbf24' },
-    { icon:'📈', label:'معدل نمو CAGR (تقريبي)', val:'~120%', color:'#f472b6' }
-  ];
-
-  document.getElementById('sum-kpis').innerHTML = sumCards.map(function(c) {
-    return '<div class="glass kpi-card" style="border-top-color:' + c.color + '">'
-      + '<div class="icon">' + c.icon + '</div>'
-      + '<div class="label">' + c.label + '</div>'
-      + '<div class="value" style="color:' + c.color + '">' + c.val + '</div>'
-      + '</div>';
-  }).join('');
-
-  renderSumChart();
-
-  var tbody = '';
-  YEARS.forEach(function(y, i) {
-    var tot = yearTotal(y);
-    var usd = yearUSD(y);
-    var growth = yearGrowth(y);
-    var share = gt > 0 ? (tot / gt * 100) : 0;
-    var rate = num(state.data[y].rate);
-
-    tbody += '<tr>'
-      + '<td><span class="yr-badge" style="background:linear-gradient(135deg,' + COLORS[i] + ',' + COLORS[(i+1)%COLORS.length] + ')">' + y + '</span></td>'
-      + '<td style="color:#a5b4fc;font-weight:600;">' + fmtSYP(tot) + '</td>'
-      + '<td style="color:#34d399;font-weight:600;">' + fmtUSD(usd) + '</td>'
-      + '<td>'
-      +   (growth !== null
-          ? '<span style="color:' + (growth >= 0 ? '#34d399' : '#f87171') + ';font-weight:700;">' + (growth>=0?'+':'') + growth.toFixed(1) + '%</span>'
-          : '<span style="color:rgba(255,255,255,.3)">—</span>')
-      + '</td>'
-      + '<td>'
-      +   '<div style="display:flex;align-items:center;gap:6px;justify-content:center;">'
-      +   '<div style="height:5px;width:55px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;">'
-      +   '<div style="height:100%;width:' + share.toFixed(1) + '%;background:linear-gradient(90deg,' + COLORS[i] + ',' + COLORS[(i+1)%COLORS.length] + ');border-radius:3px;"></div>'
-      +   '</div>'
-      +   '<span style="font-size:12px;color:rgba(255,255,255,.7);">' + pct(tot, gt) + '</span>'
-      +   '</div>'
-      + '</td>'
-      + '<td><input type="number" class="inp" data-year="' + y + '" data-field="rate" value="' + (rate || '') + '" placeholder="سعر الصرف" style="width:110px;" /></td>'
-      + '</tr>';
-  });
-
-  document.getElementById('tbl-summary-body').innerHTML = tbody;
-  document.getElementById('tbl-summary-foot').innerHTML =
-    '<tr>'
-    + '<td>الإجمالي</td>'
-    + '<td colspan="2" style="color:#a5b4fc;">' + fmtSYP(gt) + ' / ' + fmtUSD(gusd) + '</td>'
-    + '<td colspan="3" style="color:rgba(255,255,255,.3);">— — —</td>'
-    + '</tr>';
-
-  var series = YEARS.map(function(y, i) {
-    return {
-      label: y,
-      color: COLORS[i],
-      values: state.data[y].months.map(function(m){ return num(m.rev) / 1e9; })
+    var state = {
+      data: null,
+      localTs: 0,
+      saveTimer: null,
+      activeYear: 2025,
+      activeView: 'dashboard'
     };
-  });
-  var xLabels = MONTHS.map(function(m){ return m.slice(0,3); });
-  setTimeout(function(){ drawLineChart('canvas-monthly', series, xLabels); }, 60);
-}
 
-function setSumChart(type) {
-  state.sumChartType = type;
-  document.getElementById('ctbtn-bar').classList.toggle('active', type === 'bar');
-  document.getElementById('ctbtn-line').classList.toggle('active', type === 'line');
-  renderSumChart();
-}
-window.setSumChart = setSumChart;
-
-function renderSumChart() {
-  if (state.sumChartType === 'bar') {
-    var items = YEARS.map(function(y, i) {
-      return { label: '' + y, value: yearTotal(y), color: COLORS[i] };
-    });
-    setTimeout(function(){ drawBarChart('canvas-summary', items); }, 50);
-  } else {
-    var series = [{
-      label: 'مليار ل.س',
-      color: '#818cf8',
-      values: YEARS.map(function(y){ return yearTotal(y) / 1e9; })
-    }];
-    var xLabels = YEARS.map(function(y){ return '' + y; });
-    setTimeout(function(){ drawLineChart('canvas-summary', series, xLabels); }, 50);
-  }
-}
-
-function showView(view) {
-  state.activeView = view;
-
-  document.getElementById('panel-year').classList.toggle('visible', view === 'year');
-  document.getElementById('panel-summary').classList.toggle('visible', view === 'summary');
-
-  document.querySelectorAll('.tab').forEach(function(btn) {
-    var bv = btn.dataset.view;
-    var by = parseInt(btn.dataset.year);
-    if (bv === 'summary') {
-      btn.classList.toggle('active', view === 'summary');
-    } else {
-      btn.classList.toggle('active', view === 'year' && by === state.activeYear);
+    function n(v){ return Number(v) || 0; }
+    function full(v, digits){ return n(v).toLocaleString('en-US', { maximumFractionDigits: digits == null ? 2 : digits, minimumFractionDigits: 0 }); }
+    function money(v){ return '<span class="num">' + full(v, 0) + '</span>'; }
+    function usd(v){ return '<span class="num">$' + full(v, 2) + '</span>'; }
+    function pct(v){ if (v == null || !isFinite(v)) return '—'; return '<span class="num">' + (v >= 0 ? '+' : '') + full(v, 1) + '%</span>'; }
+    function bestMonthIndex(year){
+      var arr = state.data[year].months.map(function(m){ return n(m.rev); });
+      var max = Math.max.apply(null, arr);
+      return arr.indexOf(max);
     }
-  });
+    function yearTotal(year){ return state.data[year].months.reduce(function(s,m){ return s + n(m.rev); }, 0); }
+    function yearUSD(year){ var rate = n(state.data[year].rate); var total = yearTotal(year); return rate > 0 ? total / rate : 0; }
+    function grandTotal(){ return YEARS.reduce(function(s,y){ return s + yearTotal(y); }, 0); }
+    function grandUSD(){ return YEARS.reduce(function(s,y){ return s + yearUSD(y); }, 0); }
+    function yearGrowth(year){ if (year <= YEARS[0]) return null; var prev = yearTotal(year - 1); if (!prev) return null; return ((yearTotal(year) - prev) / prev) * 100; }
+    function shareOfTotal(year){ var gt = grandTotal(); return gt ? (yearTotal(year) / gt) * 100 : 0; }
 
-  if (view === 'year') renderYear();
-  if (view === 'summary') renderSummary();
-}
-
-function buildTabs() {
-  var tabs = document.getElementById('tabs');
-
-  YEARS.forEach(function(y) {
-    var btn = document.createElement('button');
-    btn.className = 'tab';
-    btn.dataset.view = 'year';
-    btn.dataset.year = y;
-    btn.textContent = y;
-    btn.style.borderTop = '2px solid transparent';
-    btn.addEventListener('click', function() {
-      state.activeYear = y;
-      showView('year');
-    });
-    tabs.appendChild(btn);
-  });
-
-  tabs.querySelector('[data-view="summary"]').addEventListener('click', function() {
-    showView('summary');
-  });
-}
-
-document.addEventListener('input', function(e) {
-  var el = e.target;
-  if (!el.matches('.inp')) return;
-
-  var field = el.dataset.field;
-  var y = parseInt(el.dataset.year);
-  var mi = el.dataset.mi !== undefined ? parseInt(el.dataset.mi) : null;
-  var val = num(el.value);
-
-  if (!field || !y) return;
-
-  if (field === 'rate') {
-    state.data[y].rate = val;
-    if (state.activeView === 'year' && y === state.activeYear) {
-      document.getElementById('rate-usd-total').textContent =
-        'الإجمالي: ' + fmtUSD(state.data[y].rate > 0 ? yearTotal(y) / state.data[y].rate : 0);
+    function buildDefaultData(){
+      var out = {};
+      YEARS.forEach(function(y){ out[y] = { rate: DEF_RATES[y], months: RAW[y].map(function(v){ return { rev:v, price:0 }; }) }; });
+      return out;
     }
-  } else if (field === 'rev' && mi !== null) {
-    state.data[y].months[mi].rev = val;
-  } else if (field === 'price' && mi !== null) {
-    state.data[y].months[mi].price = val;
-  }
-
-  updateGlobalKPIs();
-  scheduleSave();
-});
-
-document.getElementById('inp-rate').addEventListener('input', function() {
-  var y = state.activeYear;
-  var val = num(this.value);
-  state.data[y].rate = val;
-  document.getElementById('rate-usd-total').textContent =
-    'الإجمالي: ' + fmtUSD(val > 0 ? yearTotal(y) / val : 0);
-  updateGlobalKPIs();
-  scheduleSave();
-});
-
-function updateGlobalKPIs() {
-  document.getElementById('kpi-total-syp').textContent = fmtSYP(grandTotal());
-  document.getElementById('kpi-total-usd').textContent = fmtUSD(grandUSD());
-}
-
-document.getElementById('btn-print').addEventListener('click', function() {
-  var y = state.activeYear;
-  var yd = state.data[y];
-  var tot = yearTotal(y);
-  var usd = yearUSD(y);
-  var gt = grandTotal();
-  var gu = grandUSD();
-
-  var yearRows = YEARS.map(function(yr) {
-    var t = yearTotal(yr);
-    var u = yearUSD(yr);
-    var g = yearGrowth(yr);
-    var s = gt > 0 ? (t / gt * 100).toFixed(2) : 0;
-    return '<tr><td>' + yr + '</td><td>' + fmtSYP(t) + '</td><td>' + fmtUSD(u) + '</td>'
-      + '<td>' + (g !== null ? (g >= 0 ? '+' : '') + g.toFixed(1) + '%' : '—') + '</td>'
-      + '<td>' + s + '%</td><td>' + num(state.data[yr].rate).toLocaleString() + ' ل.س</td></tr>';
-  }).join('');
-
-  var rate = num(yd.rate);
-  var monthRows = yd.months.map(function(m, i) {
-    var rev = num(m.rev);
-    var price = num(m.price);
-    var usdM = rate > 0 ? rev / rate : 0;
-    var subs = price > 0 ? Math.round(rev / price) : null;
-    var share = tot > 0 ? (rev / tot * 100).toFixed(2) : 0;
-    return '<tr><td>' + MONTHS[i] + '</td><td>' + (rev ? rev.toLocaleString() + ' ل.س' : '—') + '</td>'
-      + '<td>' + (price ? price.toLocaleString() + ' ل.س' : '—') + '</td>'
-      + '<td>' + (subs ? subs.toLocaleString() : '—') + '</td>'
-      + '<td>' + fmtUSD(usdM) + '</td><td>' + share + '%</td></tr>';
-  }).join('');
-
-  var win = window.open('', '_blank');
-  win.document.write('<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8">'
-    + '<link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600;700;900&display=swap" rel="stylesheet">'
-    + '<title>تقرير إيرادات أرسيل</title>'
-    + '<style>'
-    + '*{box-sizing:border-box;margin:0;padding:0}'
-    + 'body{font-family:"Noto Kufi Arabic",Tahoma,sans-serif;direction:rtl;background:#fff;color:#1a1a2e;padding:36px}'
-    + 'h1{font-size:26px;font-weight:900;color:#312e81;border-bottom:4px solid #6366f1;padding-bottom:10px;margin-bottom:8px}'
-    + 'h2{font-size:16px;font-weight:700;color:#4338ca;margin:28px 0 10px}'
-    + '.meta{color:#64748b;font-size:12px;margin-bottom:24px}'
-    + '.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}'
-    + '.stat{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:10px;padding:14px;text-align:center}'
-    + '.sl{font-size:10px;opacity:.8;margin-bottom:4px}.sv{font-size:16px;font-weight:700}'
-    + 'table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:26px}'
-    + 'th{background:linear-gradient(135deg,#312e81,#4c1d95);color:#fff;padding:9px 10px;text-align:center;font-weight:600}'
-    + 'td{padding:8px 10px;border-bottom:1px solid #e2e8f0;text-align:center}'
-    + 'tr:nth-child(even){background:#f8f7ff}'
-    + 'tfoot td{background:linear-gradient(135deg,#312e81,#4c1d95);color:#fff;font-weight:700}'
-    + '.footer{margin-top:36px;text-align:center;color:#94a3b8;font-size:11px;border-top:1px solid #e2e8f0;padding-top:16px}'
-    + '@media print{body{padding:16px}}'
-    + '</style></head><body>'
-    + '<h1>تقرير إيرادات أرسيل الشامل</h1>'
-    + '<div class="meta">تاريخ الإصدار: ' + new Date().toLocaleDateString('ar-SY') + ' | الفترة: 2019 — 2026</div>'
-    + '<div class="stats">'
-    + '<div class="stat"><div class="sl">إجمالي الإيرادات الكلي</div><div class="sv">' + fmtSYP(gt) + '</div></div>'
-    + '<div class="stat"><div class="sl">بالدولار (تقديري)</div><div class="sv">' + fmtUSD(gu) + '</div></div>'
-    + '<div class="stat"><div class="sl">أعلى سنة إيراداً</div><div class="sv">2025</div></div>'
-    + '<div class="stat"><div class="sl">عدد السنوات</div><div class="sv">8 سنوات</div></div>'
-    + '</div>'
-    + '<h2>ملخص الإيرادات السنوية (2019 – 2026)</h2>'
-    + '<table><thead><tr><th>السنة</th><th>الإيراد (ل.س)</th><th>بالدولار</th><th>نمو</th><th>نسبة من الإجمالي</th><th>سعر الصرف</th></tr></thead>'
-    + '<tbody>' + yearRows + '</tbody>'
-    + '<tfoot><tr><td>الإجمالي</td><td>' + fmtSYP(gt) + '</td><td>' + fmtUSD(gu) + '</td><td>—</td><td>100%</td><td>—</td></tr></tfoot></table>'
-    + '<h2>تفصيل شهري لسنة ' + y + '</h2>'
-    + '<table><thead><tr><th>الشهر</th><th>الإيراد</th><th>السعر الوسط</th><th>المشتركون</th><th>بالدولار</th><th>نسبة الشهر</th></tr></thead>'
-    + '<tbody>' + monthRows + '</tbody>'
-    + '<tfoot><tr><td>الإجمالي</td><td colspan="2">' + fmtSYP(tot) + '</td><td>—</td><td>' + fmtUSD(usd) + '</td><td>100%</td></tr></tfoot></table>'
-    + '<div class="footer">نظام إيرادات أرسيل — تم إنشاء هذا التقرير تلقائياً</div>'
-    + '<script>setTimeout(function(){window.print();},400);<\/script>'
-    + '</body></html>');
-  win.document.close();
-});
-
-var resizeTimer;
-window.addEventListener('resize', function() {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(function() {
-    if (state.activeView === 'year') renderYear();
-    if (state.activeView === 'summary') renderSummary();
-  }, 200);
-});
-
-
-function applyRemoteSnapshot(remote, sourceLabel) {
-  if (!remote || !remote.ts || !remote.data) return;
-  if (remote.ts > state.localTs) {
-    state.localTs = remote.ts;
-    state.data = remote.data;
-    saveLocal(remote.data, remote.ts);
-    updateGlobalKPIs();
-    if (state.activeView === 'year') renderYear();
-    if (state.activeView === 'summary') renderSummary();
-    setSyncUI('ok', sourceLabel || 'تحديث من جهاز آخر ✓');
-    setTimeout(function(){ setSyncUI('idle', 'متزامن'); }, 3000);
-  }
-}
-
-function pollFirebase() {
-  fbLoad(function(err, remote) {
-    if (err) return;
-    applyRemoteSnapshot(remote, 'تحديث من جهاز آخر ✓');
-  });
-}
-
-function startRealtimeSync() {
-  if (HAS_FIREBASE_SDK && firebaseNodeRef) {
-    onValue(firebaseNodeRef, function(snapshot) {
-      applyRemoteSnapshot(snapshot.val(), 'تحديث لحظي من Firebase ✓');
-    }, function(error) {
-      console.error('Realtime listener error:', error);
-    });
-    return;
-  }
-
-  setInterval(pollFirebase, 8000);
-}
-
-(function boot() {
-  var local = loadLocalData();
-  state.data = local || buildDefaultData();
-
-  buildTabs();
-  updateGlobalKPIs();
-  showView('year');
-
-  setSyncUI('saving', HAS_FIREBASE_SDK ? 'جاري الاتصال بـ Firebase SDK…' : 'جاري الاتصال بـ Firebase…');
-  fbLoad(function(err, remote) {
-    if (err) {
-      setSyncUI('error', 'لا يوجد اتصال — يعمل محلياً');
-      return;
+    function saveLocal(data, ts){ try{ localStorage.setItem(LS_KEY, JSON.stringify({ ts:ts, data:data })); }catch(e){} }
+    function loadLocal(){
+      try{
+        var raw = localStorage.getItem(LS_KEY);
+        if (!raw) return null;
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.data && parsed.ts){ state.localTs = parsed.ts; return parsed.data; }
+      }catch(e){}
+      return null;
     }
-    if (!remote || !remote.ts || !remote.data) {
-      setSyncUI('saving', 'رفع البيانات الأولية…');
-      var ts = Date.now();
-      state.localTs = ts;
-      fbSave(state.data, function(e) {
-        if (e) setSyncUI('error', 'فشل الرفع الأولي');
-        else setSyncUI('ok', 'تم الرفع الأولي ✓');
-        setTimeout(function(){ setSyncUI('idle', 'متزامن'); }, 3000);
+    function fbLoad(cb){
+      fetch(FB_URL).then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(d){ cb(null,d); })
+      .catch(function(err){ cb(err,null); });
+    }
+    function fbSave(data, cb){
+      var payload = JSON.stringify({ ts: Date.now(), data: data });
+      fetch(FB_URL, { method:'PUT', headers:{'Content-Type':'application/json'}, body:payload })
+      .then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(){ cb(null); })
+      .catch(function(err){ cb(err); });
+    }
+
+    function setStatus(mode, text){
+      var el = document.getElementById('sync-status');
+      el.className = 'status' + (mode ? ' ' + mode : '');
+      document.getElementById('sync-text').textContent = text;
+    }
+
+    function scheduleSave(successText){
+      saveLocal(state.data, Date.now());
+      clearTimeout(state.saveTimer);
+      setStatus('saving', 'جاري الحفظ...');
+      state.saveTimer = setTimeout(function(){
+        var ts = Date.now();
+        state.localTs = ts;
+        saveLocal(state.data, ts);
+        fbSave(state.data, function(err){
+          if (err) {
+            setStatus('error', 'خطأ في الاتصال — محفوظ محليًا');
+          } else {
+            setStatus('ok', successText || 'متزامن ✓');
+            setTimeout(function(){ setStatus('ok', 'متزامن ✓'); }, 1800);
+          }
+        });
+      }, 600);
+    }
+
+    function populateSelectors(){
+      var yearHtml = YEARS.map(function(y){ return '<option value="' + y + '">' + y + '</option>'; }).join('');
+      var monthHtml = MONTHS.map(function(m,i){ return '<option value="' + i + '">' + m + '</option>'; }).join('');
+      ['quick-year','edit-year','year-selector'].forEach(function(id){ document.getElementById(id).innerHTML = yearHtml; });
+      ['quick-month','edit-month'].forEach(function(id){ document.getElementById(id).innerHTML = monthHtml; });
+      document.getElementById('quick-year').value = state.activeYear;
+      document.getElementById('edit-year').value = state.activeYear;
+      document.getElementById('year-selector').value = state.activeYear;
+      document.getElementById('quick-month').value = new Date().getMonth();
+      document.getElementById('edit-month').value = new Date().getMonth();
+      refreshEditPreview();
+    }
+
+    function renderTopKpis(){
+      var gt = grandTotal();
+      var gu = grandUSD();
+      var bestYear = YEARS.slice().sort(function(a,b){ return yearTotal(b) - yearTotal(a); })[0];
+      var latestYear = YEARS[YEARS.length - 1];
+      var growth = yearGrowth(latestYear);
+      var cards = [
+        ['إجمالي الإيرادات الكلي','💰', money(gt)],
+        ['الإجمالي بالدولار','💵', usd(gu)],
+        ['أعلى سنة إيرادًا','🏆', '<span class="num">' + bestYear + '</span>'],
+        ['نمو آخر سنة متاحة','📈', growth == null ? '—' : pct(growth)]
+      ];
+      document.getElementById('top-kpis').innerHTML = cards.map(function(item, idx){
+        return '<div class="glass kpi"><div class="label">' + item[1] + ' ' + item[0] + '</div><div class="value">' + item[2] + '</div></div>';
+      }).join('');
+      document.getElementById('best-year-pill').innerHTML = 'الأعلى: <span class="num">' + bestYear + '</span>';
+    }
+
+    function renderYearsGrid(){
+      var ranked = YEARS.slice().sort(function(a,b){ return yearTotal(b) - yearTotal(a); });
+      var html = ranked.map(function(year, idx){
+        var bestIdx = bestMonthIndex(year);
+        var growth = yearGrowth(year);
+        return '<div class="year-card">'
+          + '<div class="year-top">'
+          +   '<div class="year-title"><div class="year num">' + year + '</div><div class="hint">نظرة دقيقة على وضع السنة</div></div>'
+          +   '<div class="rank num">' + (idx + 1) + '</div>'
+          + '</div>'
+          + '<div class="year-mini">'
+          +   '<div class="mini"><div class="m-label">الإيراد</div><div class="m-value">' + money(yearTotal(year)) + ' SYP</div></div>'
+          +   '<div class="mini"><div class="m-label">أفضل شهر</div><div class="m-value">' + MONTHS[bestIdx] + '</div></div>'
+          +   '<div class="mini"><div class="m-label">النمو</div><div class="m-value ' + (growth >= 0 ? 'good' : 'bad') + '">' + (growth == null ? '—' : pct(growth)) + '</div></div>'
+          + '</div>'
+          + '<div class="year-actions">'
+          +   '<button class="btn" onclick="openYear(' + year + ')">فتح سنة ' + year + '</button>'
+          +   '<button class="btn secondary" onclick="exportYearPdf(' + year + ')">PDF</button>'
+          + '</div>'
+          + '</div>';
+      }).join('');
+      document.getElementById('years-grid').innerHTML = html;
+    }
+
+    function renderQuickList(){
+      var bestYear = YEARS.slice().sort(function(a,b){ return yearTotal(b) - yearTotal(a); })[0];
+      var worstYear = YEARS.slice().sort(function(a,b){ return yearTotal(a) - yearTotal(b); })[0];
+      var latestYear = YEARS[YEARS.length - 1];
+      var items = [
+        ['أفضل سنة', '<span class="num">' + bestYear + '</span> — ' + money(yearTotal(bestYear))],
+        ['أقل سنة', '<span class="num">' + worstYear + '</span> — ' + money(yearTotal(worstYear))],
+        ['سعر صرف السنة الحالية', '<span class="num">' + full(state.data[state.activeYear].rate,0) + '</span>'],
+        ['إيراد السنة الحالية', money(yearTotal(state.activeYear))],
+        ['آخر سنة', '<span class="num">' + latestYear + '</span> — ' + (yearGrowth(latestYear) == null ? '—' : pct(yearGrowth(latestYear)))]
+      ];
+      document.getElementById('quick-list').innerHTML = items.map(function(item){
+        return '<div class="metric-item"><div>' + item[0] + '</div><div>' + item[1] + '</div></div>';
+      }).join('');
+    }
+
+    function renderYearView(){
+      var year = state.activeYear;
+      document.getElementById('year-selector').value = year;
+      document.getElementById('year-heading').innerHTML = '📅 تفاصيل سنة <span class="num">' + year + '</span>';
+      document.getElementById('year-rate-text').innerHTML = 'سعر الصرف: <span class="num">' + full(state.data[year].rate,0) + '</span> ل.س / $';
+
+      var total = yearTotal(year);
+      var usdTotal = yearUSD(year);
+      var growth = yearGrowth(year);
+      var bestIdx = bestMonthIndex(year);
+      var kpis = [
+        ['إجمالي السنة', money(total)],
+        ['بالدولار', usd(usdTotal)],
+        ['أفضل شهر', MONTHS[bestIdx]],
+        ['النمو عن السابق', growth == null ? '—' : pct(growth)]
+      ];
+      document.getElementById('year-kpis').innerHTML = kpis.map(function(item){
+        return '<div class="glass kpi"><div class="label">' + item[0] + '</div><div class="value">' + item[1] + '</div></div>';
+      }).join('');
+
+      var max = Math.max.apply(null, state.data[year].months.map(function(m){ return n(m.rev); })) || 1;
+      document.getElementById('year-bars').innerHTML = state.data[year].months.map(function(m, idx){
+        var value = n(m.rev);
+        var pctH = Math.max(0, Math.round((value / max) * 100));
+        return '<div class="bar-col">'
+          + '<div class="bar-value num">' + full(value,0) + '</div>'
+          + '<div class="bar-track"><div class="bar-fill" style="height:' + pctH + '%"></div></div>'
+          + '<div class="bar-label">' + MONTHS[idx] + '</div>'
+          + '</div>';
+      }).join('');
+
+      var cumulative = 0;
+      document.getElementById('year-table-body').innerHTML = state.data[year].months.map(function(m, idx){
+        var rev = n(m.rev);
+        var price = n(m.price);
+        var subs = price > 0 ? Math.round(rev / price) : null;
+        var usdM = n(state.data[year].rate) > 0 ? rev / n(state.data[year].rate) : 0;
+        cumulative += rev;
+        var share = total ? (rev / total) * 100 : 0;
+        return '<tr>'
+          + '<td>' + MONTHS[idx] + '</td>'
+          + '<td>' + money(rev) + '</td>'
+          + '<td>' + money(price) + '</td>'
+          + '<td>' + (subs == null ? '—' : '<span class="num">' + full(subs,0) + '</span>') + '</td>'
+          + '<td>' + usd(usdM) + '</td>'
+          + '<td>' + money(cumulative) + '</td>'
+          + '<td><span class="pill num">' + full(share,2) + '%</span></td>'
+          + '</tr>';
+      }).join('');
+
+      document.getElementById('year-table-foot').innerHTML = '<tr>'
+        + '<td>الإجمالي</td><td>' + money(total) + '</td><td>—</td><td>—</td><td>' + usd(usdTotal) + '</td><td>' + money(total) + '</td><td><span class="num">100.00%</span></td>'
+        + '</tr>';
+    }
+
+    function renderSummaryView(){
+      var max = Math.max.apply(null, YEARS.map(function(y){ return yearTotal(y); })) || 1;
+      document.getElementById('summary-bars').innerHTML = YEARS.map(function(year){
+        var value = yearTotal(year);
+        var pctH = Math.max(0, Math.round((value / max) * 100));
+        return '<div class="bar-col">'
+          + '<div class="bar-value num">' + full(value,0) + '</div>'
+          + '<div class="bar-track"><div class="bar-fill" style="height:' + pctH + '%"></div></div>'
+          + '<div class="bar-label num">' + year + '</div>'
+          + '</div>';
+      }).join('');
+
+      var sorted = YEARS.slice().sort(function(a,b){ return yearTotal(b) - yearTotal(a); });
+      document.getElementById('summary-side-list').innerHTML = sorted.slice(0,5).map(function(year){
+        var share = shareOfTotal(year);
+        return '<div class="metric-item"><div style="flex:1">'
+          + '<div style="font-weight:800;margin-bottom:2px"><span class="num">' + year + '</span></div>'
+          + '<div class="muted" style="font-size:11px">' + money(yearTotal(year)) + '</div>'
+          + '<div class="progress"><span style="width:' + share.toFixed(2) + '%"></span></div>'
+          + '</div>'
+          + '<div class="num">' + full(share,2) + '%</div></div>';
+      }).join('');
+
+      document.getElementById('summary-table-body').innerHTML = YEARS.map(function(year){
+        var growth = yearGrowth(year);
+        var best = MONTHS[bestMonthIndex(year)];
+        return '<tr>'
+          + '<td><span class="num">' + year + '</span></td>'
+          + '<td>' + money(yearTotal(year)) + '</td>'
+          + '<td>' + usd(yearUSD(year)) + '</td>'
+          + '<td class="' + (growth >= 0 ? 'good' : 'bad') + '">' + (growth == null ? '—' : pct(growth)) + '</td>'
+          + '<td>' + best + '</td>'
+          + '<td><span class="num">' + full(state.data[year].rate,0) + '</span></td>'
+          + '<td><span class="num">' + full(shareOfTotal(year),2) + '%</span></td>'
+          + '</tr>';
+      }).join('');
+      document.getElementById('summary-table-foot').innerHTML = '<tr>'
+        + '<td>الإجمالي</td><td>' + money(grandTotal()) + '</td><td>' + usd(grandUSD()) + '</td><td>—</td><td>—</td><td>—</td><td><span class="num">100.00%</span></td>'
+        + '</tr>';
+    }
+
+    function refreshAll(){
+      renderTopKpis();
+      renderYearsGrid();
+      renderQuickList();
+      renderYearView();
+      renderSummaryView();
+      populateQuickDefaults();
+      refreshEditPreview();
+    }
+
+    function populateQuickDefaults(){
+      document.getElementById('quick-year').value = state.activeYear;
+      document.getElementById('quick-rate').value = state.data[state.activeYear].rate || '';
+    }
+
+    function refreshEditPreview(){
+      var year = n(document.getElementById('edit-year').value || state.activeYear);
+      var monthIndex = n(document.getElementById('edit-month').value || 0);
+      var current = state.data[year].months[monthIndex];
+      document.getElementById('edit-preview').value = 'Current → Revenue: ' + full(current.rev,0) + ' | Price: ' + full(current.price,0) + ' | Rate: ' + full(state.data[year].rate,0);
+    }
+
+    function switchView(view){
+      state.activeView = view;
+      document.querySelectorAll('.tab').forEach(function(tab){ tab.classList.toggle('active', tab.dataset.view === view); });
+      document.querySelectorAll('.view').forEach(function(v){ v.classList.toggle('active', v.id === 'view-' + view); });
+      if (view === 'year') renderYearView();
+      if (view === 'summary') renderSummaryView();
+      if (view === 'dashboard') { renderYearsGrid(); renderQuickList(); }
+    }
+
+    function openYear(year){
+      state.activeYear = year;
+      switchView('year');
+      renderYearView();
+      populateQuickDefaults();
+      refreshEditPreview();
+    }
+    window.openYear = openYear;
+
+    function updateMonthValue(year, monthIndex, rev, price, rate){
+      state.data[year].months[monthIndex].rev = n(rev);
+      state.data[year].months[monthIndex].price = n(price);
+      if (rate !== undefined && rate !== null && rate !== '') state.data[year].rate = n(rate);
+      state.activeYear = year;
+      refreshAll();
+    }
+
+    function buildPdfHtml(yearMode){
+      var year = yearMode || state.activeYear;
+      var totalAll = grandTotal();
+      var html = '';
+      html += '<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8">';
+      html += '<title>تقرير إيرادات أرسيل</title>';
+      html += '<link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600;700;800;900&display=swap" rel="stylesheet">';
+      html += '<style>'
+        + 'body{font-family:"Noto Kufi Arabic",Tahoma,sans-serif;background:#08060f;color:#f5f7ff;padding:28px;margin:0;direction:rtl}'
+        + '*{box-sizing:border-box}'
+        + '.wrap{max-width:1200px;margin:0 auto}'
+        + '.hero{padding:26px;border-radius:24px;background:linear-gradient(135deg,#0f1021,#1a1533 55%,#10233a);border:1px solid rgba(255,255,255,.08);margin-bottom:18px}'
+        + 'h1{margin:0 0 8px;font-size:28px;font-weight:900}'
+        + '.sub{color:rgba(255,255,255,.72);font-size:12px}'
+        + '.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}'
+        + '.card{padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}'
+        + '.label{font-size:11px;color:rgba(255,255,255,.65);margin-bottom:6px}'
+        + '.value{font-size:18px;font-weight:900;line-height:1.45}'
+        + '.section{padding:20px;border-radius:24px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);margin-bottom:18px}'
+        + 'h2{font-size:16px;margin:0 0 14px;font-weight:900}'
+        + 'table{width:100%;border-collapse:collapse;font-size:12px}'
+        + 'th,td{padding:10px 8px;text-align:center;border-bottom:1px solid rgba(255,255,255,.08)}'
+        + 'th{color:rgba(255,255,255,.7);background:rgba(255,255,255,.03)}'
+        + '.barrow{display:flex;align-items:flex-end;gap:10px;height:220px;padding-top:14px;overflow:hidden}'
+        + '.col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px}'
+        + '.track{height:150px;width:100%;max-width:44px;border-radius:18px;background:rgba(255,255,255,.06);padding:4px;display:flex;align-items:flex-end}'
+        + '.fill{width:100%;border-radius:14px;background:linear-gradient(180deg,#4db4ff,#8f7bff)}'
+        + '.small{font-size:10px;color:rgba(255,255,255,.72);line-height:1.35;text-align:center}'
+        + '.num{direction:ltr;display:inline-block;font-variant-numeric:tabular-nums}'
+        + '@media print{body{padding:0}.wrap{max-width:none}.section,.hero{break-inside:avoid}.cards{grid-template-columns:repeat(2,1fr)}}'
+      + '</style></head><body><div class="wrap">';
+
+      html += '<div class="hero"><h1>📊 تقرير إيرادات أرسيل</h1><div class="sub">Generated: ' + new Date().toLocaleString('en-US') + ' · Dark Premium PDF</div>';
+      html += '<div class="cards">'
+        + '<div class="card"><div class="label">إجمالي كل السنوات</div><div class="value"><span class="num">' + full(totalAll,0) + '</span> SYP</div></div>'
+        + '<div class="card"><div class="label">الإجمالي بالدولار</div><div class="value"><span class="num">$' + full(grandUSD(),2) + '</span></div></div>'
+        + '<div class="card"><div class="label">السنة المختارة</div><div class="value"><span class="num">' + year + '</span></div></div>'
+        + '<div class="card"><div class="label">إجمالي السنة المختارة</div><div class="value"><span class="num">' + full(yearTotal(year),0) + '</span> SYP</div></div>'
+      + '</div></div>';
+
+      html += '<div class="section"><h2>ملخص سنوي كامل</h2><table><thead><tr><th>السنة</th><th>الإيراد</th><th>USD</th><th>النمو</th><th>أفضل شهر</th><th>سعر الصرف</th><th>الحصة</th></tr></thead><tbody>';
+      YEARS.forEach(function(y){
+        var growth = yearGrowth(y);
+        html += '<tr><td><span class="num">' + y + '</span></td><td><span class="num">' + full(yearTotal(y),0) + '</span></td><td><span class="num">$' + full(yearUSD(y),2) + '</span></td><td>' + (growth == null ? '—' : '<span class="num">' + (growth >= 0 ? '+' : '') + full(growth,1) + '%</span>') + '</td><td>' + MONTHS[bestMonthIndex(y)] + '</td><td><span class="num">' + full(state.data[y].rate,0) + '</span></td><td><span class="num">' + full(shareOfTotal(y),2) + '%</span></td></tr>';
       });
-      return;
+      html += '</tbody></table></div>';
+
+      var max = Math.max.apply(null, state.data[year].months.map(function(m){ return n(m.rev); })) || 1;
+      html += '<div class="section"><h2>الرسم الشهري لسنة ' + year + '</h2><div class="barrow">';
+      state.data[year].months.forEach(function(m, idx){
+        var height = Math.max(0, Math.round((n(m.rev) / max) * 100));
+        html += '<div class="col"><div class="small num">' + full(m.rev,0) + '</div><div class="track"><div class="fill" style="height:' + height + '%"></div></div><div class="small">' + MONTHS[idx] + '</div></div>';
+      });
+      html += '</div></div>';
+
+      html += '<div class="section"><h2>تفصيل الأشهر لسنة ' + year + '</h2><table><thead><tr><th>الشهر</th><th>الإيراد</th><th>السعر الوسط</th><th>المشتركين</th><th>USD</th><th>نسبة الشهر</th></tr></thead><tbody>';
+      var totalYear = yearTotal(year);
+      state.data[year].months.forEach(function(m, idx){
+        var price = n(m.price);
+        var subs = price > 0 ? Math.round(n(m.rev) / price) : null;
+        var share = totalYear ? (n(m.rev) / totalYear) * 100 : 0;
+        var usdMonth = n(state.data[year].rate) > 0 ? (n(m.rev) / n(state.data[year].rate)) : 0;
+        html += '<tr><td>' + MONTHS[idx] + '</td><td><span class="num">' + full(m.rev,0) + '</span></td><td><span class="num">' + full(price,0) + '</span></td><td>' + (subs == null ? '—' : '<span class="num">' + full(subs,0) + '</span>') + '</td><td><span class="num">$' + full(usdMonth,2) + '</span></td><td><span class="num">' + full(share,2) + '%</span></td></tr>';
+      });
+      html += '</tbody></table></div>';
+      html += '</div><script>window.onload=function(){setTimeout(function(){window.print();},700)}<\/script></body></html>';
+      return html;
     }
 
-    if (remote.ts > state.localTs) {
-      state.localTs = remote.ts;
-      state.data = remote.data;
-      saveLocal(remote.data, remote.ts);
-      updateGlobalKPIs();
-      showView(state.activeView);
-      setSyncUI('ok', 'تم التحديث من السحابة ✓');
-    } else {
-      setSyncUI('ok', 'متزامن ✓');
+    function exportYearPdf(year){
+      var win = window.open('', '_blank');
+      if (!win) { alert('اسمح للنوافذ المنبثقة أولاً.'); return; }
+      win.document.open();
+      win.document.write(buildPdfHtml(year));
+      win.document.close();
     }
-    setTimeout(function(){ setSyncUI('idle', 'متزامن'); }, 3000);
-  });
+    window.exportYearPdf = exportYearPdf;
 
-  startRealtimeSync();
-})();
-</script>
+    function exportAllPdf(){
+      var win = window.open('', '_blank');
+      if (!win) { alert('اسمح للنوافذ المنبثقة أولاً.'); return; }
+      win.document.open();
+      win.document.write(buildPdfHtml(state.activeYear));
+      win.document.close();
+    }
 
+    document.querySelectorAll('.tab').forEach(function(tab){
+      tab.addEventListener('click', function(){ switchView(tab.dataset.view); });
+    });
+
+    document.getElementById('btn-open-dashboard').addEventListener('click', function(){ switchView('dashboard'); });
+    document.getElementById('year-selector').addEventListener('change', function(){ state.activeYear = n(this.value); renderYearView(); populateQuickDefaults(); refreshEditPreview(); });
+    document.getElementById('btn-pdf-all').addEventListener('click', exportAllPdf);
+    document.getElementById('btn-pdf-year').addEventListener('click', function(){ exportYearPdf(state.activeYear); });
+
+    document.getElementById('btn-quick-save').addEventListener('click', function(){
+      var y = n(document.getElementById('quick-year').value);
+      var m = n(document.getElementById('quick-month').value);
+      var rev = n(document.getElementById('quick-rev').value);
+      var price = n(document.getElementById('quick-price').value);
+      var rate = n(document.getElementById('quick-rate').value);
+      updateMonthValue(y, m, rev, price, rate);
+      document.getElementById('quick-save-text').textContent = 'تم تعديل ' + MONTHS[m] + ' / ' + y + ' وحفظه.';
+      scheduleSave('تم حفظ التعديل ✓');
+    });
+
+    function loadEditCurrent(){
+      var y = n(document.getElementById('edit-year').value);
+      var m = n(document.getElementById('edit-month').value);
+      document.getElementById('edit-rev').value = state.data[y].months[m].rev || '';
+      document.getElementById('edit-price').value = state.data[y].months[m].price || '';
+      document.getElementById('edit-rate').value = state.data[y].rate || '';
+      refreshEditPreview();
+      document.getElementById('edit-status-text').textContent = 'تم تحميل القيم الحالية.';
+    }
+    document.getElementById('btn-load-current').addEventListener('click', loadEditCurrent);
+    document.getElementById('edit-year').addEventListener('change', refreshEditPreview);
+    document.getElementById('edit-month').addEventListener('change', refreshEditPreview);
+
+    document.getElementById('btn-edit-save').addEventListener('click', function(){
+      var y = n(document.getElementById('edit-year').value);
+      var m = n(document.getElementById('edit-month').value);
+      updateMonthValue(y, m, n(document.getElementById('edit-rev').value), n(document.getElementById('edit-price').value), n(document.getElementById('edit-rate').value));
+      document.getElementById('edit-status-text').textContent = 'تم الحفظ بدقة لسنة ' + y + ' شهر ' + MONTHS[m] + '.';
+      scheduleSave('تم حفظ التعديل ✓');
+      refreshEditPreview();
+    });
+
+    function pollFirebase(){
+      fbLoad(function(err, remote){
+        if (err || !remote || !remote.ts || !remote.data) return;
+        if (remote.ts > state.localTs) {
+          state.localTs = remote.ts;
+          state.data = remote.data;
+          saveLocal(remote.data, remote.ts);
+          refreshAll();
+          setStatus('ok', 'تم التحديث من جهاز آخر ✓');
+          setTimeout(function(){ setStatus('ok', 'متزامن ✓'); }, 1800);
+        }
+      });
+    }
+
+    function boot(){
+      state.data = loadLocal() || buildDefaultData();
+      populateSelectors();
+      loadEditCurrent();
+      refreshAll();
+      switchView('dashboard');
+      setStatus('saving', 'جاري الاتصال بـ Firebase...');
+      fbLoad(function(err, remote){
+        if (err) {
+          setStatus('error', 'لا يوجد اتصال — يعمل محليًا');
+          return;
+        }
+        if (!remote || !remote.ts || !remote.data) {
+          setStatus('saving', 'رفع البيانات الأولية...');
+          var ts = Date.now();
+          state.localTs = ts;
+          saveLocal(state.data, ts);
+          fbSave(state.data, function(e){
+            if (e) setStatus('error', 'فشل الرفع الأولي');
+            else setStatus('ok', 'تم الرفع الأولي ✓');
+            setTimeout(function(){ setStatus('ok', 'متزامن ✓'); }, 1800);
+          });
+          return;
+        }
+        if (remote.ts > state.localTs) {
+          state.localTs = remote.ts;
+          state.data = remote.data;
+          saveLocal(remote.data, remote.ts);
+          refreshAll();
+        }
+        setStatus('ok', 'متزامن ✓');
+      });
+      setInterval(pollFirebase, 8000);
+    }
+
+    boot();
+  </script>
 </body>
 </html>
